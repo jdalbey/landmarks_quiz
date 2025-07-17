@@ -106,6 +106,43 @@
             font-size: 12px;
         }
 
+        .user-response {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .response-section {
+            margin-bottom: 15px;
+        }
+
+        .response-label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .common-name-input {
+            width: 300px;
+            padding: 5px;
+            font-family: Verdana, sans-serif;
+            font-size: 12px;
+        }
+
+        .continent-checkboxes {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .continent-option {
+            font-size: 12px;
+        }
+
+        .continent-option input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
         .correct-answer {
             background-color: #ffff99;
             padding: 10px;
@@ -124,10 +161,10 @@
         <h1>Animal, Vegetable, or Mineral?</h1>
         
         <div class="controls">
+            <strong>Page <span id="pageCounter">1/24</span></strong>
+            &nbsp;&nbsp;&nbsp;
             <input type="checkbox" id="randomizeCheckbox" onchange="toggleMode()">
             <label for="randomizeCheckbox">Randomize</label>
-            &nbsp;&nbsp;&nbsp;
-            <strong>Page <span id="pageCounter">1/24</span></strong>
         </div>
 
         <div class="image-container">
@@ -171,6 +208,35 @@
             </div>
         </div>
 
+        <div class="user-response">
+            <div class="response-section">
+                <label class="response-label" for="commonNameInput">Common Name?</label>
+                <input type="text" id="commonNameInput" class="common-name-input" placeholder="Enter common name">
+            </div>
+            
+            <div class="response-section">
+                <div class="response-label">Continent(s)?</div>
+                <div class="continent-checkboxes">
+                    <div class="continent-option">
+                        <input type="checkbox" id="americas" name="continent" value="Americas">
+                        <label for="americas">Americas</label>
+                    </div>
+                    <div class="continent-option">
+                        <input type="checkbox" id="europe" name="continent" value="Europe">
+                        <label for="europe">Europe</label>
+                    </div>
+                    <div class="continent-option">
+                        <input type="checkbox" id="asia" name="continent" value="Asia">
+                        <label for="asia">Asia</label>
+                    </div>
+                    <div class="continent-option">
+                        <input type="checkbox" id="africa" name="continent" value="Africa">
+                        <label for="africa">Africa</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="correctAnswer" class="correct-answer" style="display: none;"></div>
 
         <div class="buttons">
@@ -184,9 +250,9 @@
     <script>
         // Quiz data - Add your quiz items here
         const quizData = [
-            { image: "images/bear.jpg", answer: 0, description: "Lion", weight: "420 lbs", height: "4 ft" }, // Animal
-            { image: "images/flower.jpg", answer: 1, description: "Oak Tree", weight: "14,000 lbs", height: "80 ft" }, // Vegetable
-            { image: "images/crystal.jpg", answer: 2, description: "Diamond", weight: "3.5 g/cm³", height: "Variable" }, // Mineral
+            { image: "images/bear.jpg", answer: 0, description: "Lion", weight: "420 lbs", height: "4 ft", commonName: "Lion", continent: "Africa" }, // Animal
+            { image: "images/flower.jpg", answer: 1, description: "Oak Tree", weight: "14,000 lbs", height: "80 ft", commonName: "Oak Tree", continent: "Americas, Europe, Asia" }, // Vegetable
+            { image: "images/crystal.jpg", answer: 2, description: "Diamond", weight: "3.5 g/cm³", height: "Variable", commonName: "Diamond", continent: "Africa, Americas, Asia" }, // Mineral
         ];
 
         const answerLabels = ["Animal", "Vegetable", "Mineral"];
@@ -272,7 +338,7 @@
             
             // Show correct answer
             const correctAnswerDiv = document.getElementById('correctAnswer');
-            correctAnswerDiv.innerHTML = `Correct Answer: ${answerLabels[correctAnswer]}`;
+            correctAnswerDiv.innerHTML = `Category: ${answerLabels[correctAnswer]}<br>Common Name: ${item.commonName}<br>Continent(s): ${item.continent}`;
             correctAnswerDiv.style.display = 'block';
             
             // Update button visibility
@@ -287,6 +353,13 @@
             // Clear all radio buttons
             const radios = document.querySelectorAll('input[name="answer"]');
             radios.forEach(radio => radio.checked = false);
+            
+            // Clear common name input
+            document.getElementById('commonNameInput').value = '';
+            
+            // Clear continent checkboxes
+            const continentCheckboxes = document.querySelectorAll('input[name="continent"]');
+            continentCheckboxes.forEach(checkbox => checkbox.checked = false);
             
             // Hide correct answer
             document.getElementById('correctAnswer').style.display = 'none';
