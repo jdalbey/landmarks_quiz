@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal, Vegetable, or Mineral Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            min-height: 100vh;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-switch.active {
+            background-color: #4CAF50;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .page-counter {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .quiz-content {
+            display: flex;
+            flex-direction: column;
+            height: 70vh;
+        }
+
+        .image-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .quiz-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .divider {
+            height: 2px;
+            background-color: #ddd;
+            margin: 20px 0;
+        }
+
+        .options-section {
+            flex: 0 0 auto;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #666;
+            border-radius: 3px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .checkbox.correct {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+        }
+
+        .checkbox.correct::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+        }
+
+        .option-text {
+            font-size: 18px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Animal, Vegetable, or Mineral?</h1>
+            <div class="controls">
+                <div class="toggle-container">
+                    <span>Sequential</span>
+                    <div class="toggle-switch" id="modeToggle">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <span>Random</span>
+                </div>
+                <div class="page-counter" id="pageCounter">1/24</div>
+            </div>
+        </div>
+
+        <div class="quiz-content">
+            <div class="image-section">
+                <img id="quizImage" class="quiz-image" src="" alt="Quiz item" style="display: none;">
+                <div class="loading" id="loadingText">Loading...</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="options-section">
+                <div class="option">
+                    <div class="checkbox" id="checkbox0"></div>
+                    <div class="option-text">Animal</div>
+                </div>
+                <div class="option">
+                    <div class="checkbox" id="checkbox1"></div>
+                    <div class="option-text">Vegetable</div>
+                </div>
+                <div class="option">
+                    <div class="checkbox" id="checkbox2"></div>
+                    <div class="option-text">Mineral</div>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button class="btn btn-secondary" id="prevBtn" onclick="previousItem()">Previous</button>
+                <button class="btn btn-success" id="revealBtn" onclick="revealAnswer()">Reveal Answer</button>
+                <button class="btn btn-warning" id="resetBtn" onclick="resetAnswer()" style="display: none;">Reset</button>
+                <button class="btn btn-secondary" id="nextBtn" onclick="nextItem()">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quiz data - Add your quiz items here
+        const quizData = [
+            { image: "images/bear.jpg", answer: 0, description: "Bear" }, // Animal
+            { image: "images/flower.jpg", answer: 1, description: "Tiger Lily" }, // Vegetable
+            { image: "images/crystal.jpg", answer: 2, description: "Quartz" }, // Mineral
+        ];
+
+        let currentIndex = 0;
+        let isRandomMode = false;
+        let answerRevealed = false;
+
+        // Initialize the quiz
+        function initializeQuiz() {
+            updatePageCounter();
+            loadCurrentItem();
+            updateNavigationButtons();
+        }
+
+        // Get current item index based on mode
+        function getCurrentItemIndex() {
+            if (isRandomMode) {
+                return Math.floor(Math.random() * quizData.length);
+            }
+            return currentIndex;
+        }
+
+        // Load current quiz item
+        function loadCurrentItem() {
+            const itemIndex = getCurrentItemIndex();
+            const item = quizData[itemIndex];
+            
+            const image = document.getElementById('quizImage');
+            const loadingText = document.getElementById('loadingText');
+            
+            // Show loading text
+            loadingText.style.display = 'block';
+            image.style.display = 'none';
+            
+            // Load image
+            image.src = item.image;
+            image.onload = function() {
+                loadingText.style.display = 'none';
+                image.style.display = 'block';
+            };
+            
+            // Reset answer state
+            resetAnswer();
+        }
+
+        // Update page counter
+        function updatePageCounter() {
+            const counter = document.getElementById('pageCounter');
+            counter.textContent = `${currentIndex + 1}/${quizData.length}`;
+        }
+
+        // Update navigation buttons
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (isRandomMode) {
+                // In random mode, always allow navigation
+                prevBtn.disabled = false;
+                nextBtn.disabled = false;
+            } else {
+                prevBtn.disabled = currentIndex === 0;
+                nextBtn.disabled = currentIndex === quizData.length - 1;
+            }
+        }
+
+        // Reveal the correct answer
+        function revealAnswer() {
+            const itemIndex = getCurrentItemIndex();
+            const correctAnswer = quizData[itemIndex].answer;
+            
+            // Clear all checkboxes first
+            for (let i = 0; i < 3; i++) {
+                document.getElementById(`checkbox${i}`).classList.remove('correct');
+            }
+            
+            // Show correct answer
+            document.getElementById(`checkbox${correctAnswer}`).classList.add('correct');
+            
+            // Update button visibility
+            document.getElementById('revealBtn').style.display = 'none';
+            document.getElementById('resetBtn').style.display = 'inline-block';
+            
+            answerRevealed = true;
+        }
+
+        // Reset answer display
+        function resetAnswer() {
+            // Clear all checkboxes
+            for (let i = 0; i < 3; i++) {
+                document.getElementById(`checkbox${i}`).classList.remove('correct');
+            }
+            
+            // Update button visibility
+            document.getElementById('revealBtn').style.display = 'inline-block';
+            document.getElementById('resetBtn').style.display = 'none';
+            
+            answerRevealed = false;
+        }
+
+        // Navigate to next item
+        function nextItem() {
+            if (isRandomMode) {
+                // In random mode, just load a new random item
+                loadCurrentItem();
+            } else {
+                if (currentIndex < quizData.length - 1) {
+                    currentIndex++;
+                    updatePageCounter();
+                    loadCurrentItem();
+                    updateNavigationButtons();
+                }
+            }
+        }
+
+        // Navigate to previous item
+        function previousItem() {
+            if (isRandomMode) {
+                // In random mode, just load a new random item
+                loadCurrentItem();
+            } else {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updatePageCounter();
+                    loadCurrentItem();
+                    updateNavigationButtons();
+                }
+            }
+        }
+
+        // Toggle between sequential and random mode
+        function toggleMode() {
+            const toggle = document.getElementById('modeToggle');
+            isRandomMode = !isRandomMode;
+            
+            if (isRandomMode) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+                currentIndex = 0;
+            }
+            
+            updatePageCounter();
+            loadCurrentItem();
+            updateNavigationButtons();
+        }
+
+        // Event listeners
+        document.getElementById('modeToggle').addEventListener('click', toggleMode);
+
+        // Initialize the quiz when page loads
+        window.addEventListener('load', initializeQuiz);
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', function(event) {
+            switch(event.key) {
+                case 'ArrowLeft':
+                    if (!document.getElementById('prevBtn').disabled) {
+                        previousItem();
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (!document.getElementById('nextBtn').disabled) {
+                        nextItem();
+                    }
+                    break;
+                case ' ':
+                    event.preventDefault();
+                    if (answerRevealed) {
+                        resetAnswer();
+                    } else {
+                        revealAnswer();
+                    }
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>
