@@ -45,39 +45,27 @@
             flex-wrap: wrap;
         }
 
-        .toggle-container {
+        .randomize-container {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            background-color: #ccc;
-            border-radius: 15px;
+        .randomize-checkbox {
+            width: 18px;
+            height: 18px;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
 
-        .toggle-switch.active {
-            background-color: #4CAF50;
+        .randomize-label {
+            cursor: pointer;
+            font-size: 16px;
         }
 
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 24px;
-            height: 24px;
-            background-color: white;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(30px);
+        .page-label {
+            font-size: 16px;
+            color: #666;
+            margin-right: 5px;
         }
 
         .page-counter {
@@ -126,6 +114,12 @@
             margin: 15px 0;
             padding: 10px;
             border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .option:hover {
+            background-color: #f0f0f0;
         }
 
         .checkbox {
@@ -140,19 +134,31 @@
             transition: all 0.3s;
         }
 
-        .checkbox.correct {
-            background-color: #4CAF50;
-            border-color: #4CAF50;
+        .checkbox.selected {
+            background-color: #3498db;
+            border-color: #3498db;
         }
 
-        .checkbox.correct::after {
+        .checkbox.selected::after {
             content: '✓';
             color: white;
             font-weight: bold;
         }
 
+        .checkbox.correct {
+            background-color: #f1c40f;
+            border-color: #f1c40f;
+        }
+
+        .checkbox.correct::after {
+            content: '✓';
+            color: #333;
+            font-weight: bold;
+        }
+
         .option-text {
             font-size: 18px;
+            cursor: pointer;
         }
 
         .buttons {
@@ -229,14 +235,14 @@
         <div class="header">
             <h1>Animal, Vegetable, or Mineral?</h1>
             <div class="controls">
-                <div class="toggle-container">
-                    <span>Sequential</span>
-                    <div class="toggle-switch" id="modeToggle">
-                        <div class="toggle-slider"></div>
-                    </div>
-                    <span>Random</span>
+                <div class="randomize-container">
+                    <input type="checkbox" id="randomizeCheckbox" class="randomize-checkbox" onchange="toggleMode()">
+                    <label for="randomizeCheckbox" class="randomize-label">Randomize</label>
                 </div>
-                <div class="page-counter" id="pageCounter">1/24</div>
+                <div class="page-counter">
+                    <span class="page-label">Page</span>
+                    <span id="pageCounter">1/24</span>
+                </div>
             </div>
         </div>
 
@@ -249,15 +255,15 @@
             <div class="divider"></div>
 
             <div class="options-section">
-                <div class="option">
+                <div class="option" onclick="selectOption(0)">
                     <div class="checkbox" id="checkbox0"></div>
                     <div class="option-text">Animal</div>
                 </div>
-                <div class="option">
+                <div class="option" onclick="selectOption(1)">
                     <div class="checkbox" id="checkbox1"></div>
                     <div class="option-text">Vegetable</div>
                 </div>
-                <div class="option">
+                <div class="option" onclick="selectOption(2)">
                     <div class="checkbox" id="checkbox2"></div>
                     <div class="option-text">Mineral</div>
                 </div>
@@ -275,14 +281,15 @@
     <script>
         // Quiz data - Add your quiz items here
         const quizData = [
-            { image: "images/bear.jpg", answer: 0, description: "Bear" }, // Animal
-            { image: "images/flower.jpg", answer: 1, description: "Tiger Lily" }, // Vegetable
-            { image: "images/crystal.jpg", answer: 2, description: "Quartz" }, // Mineral
+            { image: "images/bear.jpg", answer: 0, description: "Lion" }, // Animal
+            { image: "images/flower.jpg", answer: 1, description: "Oak Tree" }, // Vegetable
+            { image: "images/crystal.jpg", answer: 2, description: "Diamond" }, // Mineral
         ];
 
         let currentIndex = 0;
         let isRandomMode = false;
         let answerRevealed = false;
+        let selectedOption = -1; // Track user's selected option
 
         // Initialize the quiz
         function initializeQuiz() {
@@ -343,17 +350,25 @@
             }
         }
 
+        // Select option (for user interaction)
+        function selectOption(optionIndex) {
+            if (answerRevealed) return;
+            
+            // Clear all checkboxes first
+            for (let i = 0; i < 3; i++) {
+                document.getElementById(`checkbox${i}`).classList.remove('selected');
+            }
+            
+            // Select the chosen option
+            selectedOption = optionIndex;
+            document.getElementById(`checkbox${optionIndex}`).classList.add('selected');
+        }
         // Reveal the correct answer
         function revealAnswer() {
             const itemIndex = getCurrentItemIndex();
             const correctAnswer = quizData[itemIndex].answer;
             
-            // Clear all checkboxes first
-            for (let i = 0; i < 3; i++) {
-                document.getElementById(`checkbox${i}`).classList.remove('correct');
-            }
-            
-            // Show correct answer
+            // Show correct answer in yellow
             document.getElementById(`checkbox${correctAnswer}`).classList.add('correct');
             
             // Update button visibility
@@ -367,8 +382,12 @@
         function resetAnswer() {
             // Clear all checkboxes
             for (let i = 0; i < 3; i++) {
-                document.getElementById(`checkbox${i}`).classList.remove('correct');
+                const checkbox = document.getElementById(`checkbox${i}`);
+                checkbox.classList.remove('correct', 'selected');
             }
+            
+            // Reset selected option
+            selectedOption = -1;
             
             // Update button visibility
             document.getElementById('revealBtn').style.display = 'inline-block';
@@ -409,13 +428,11 @@
 
         // Toggle between sequential and random mode
         function toggleMode() {
-            const toggle = document.getElementById('modeToggle');
-            isRandomMode = !isRandomMode;
+            const checkbox = document.getElementById('randomizeCheckbox');
+            isRandomMode = checkbox.checked;
             
-            if (isRandomMode) {
-                toggle.classList.add('active');
-            } else {
-                toggle.classList.remove('active');
+            if (!isRandomMode) {
+                // Reset to beginning when switching to sequential
                 currentIndex = 0;
             }
             
@@ -425,7 +442,7 @@
         }
 
         // Event listeners
-        document.getElementById('modeToggle').addEventListener('click', toggleMode);
+        document.getElementById('randomizeCheckbox').addEventListener('change', toggleMode);
 
         // Initialize the quiz when page loads
         window.addEventListener('load', initializeQuiz);
@@ -450,6 +467,15 @@
                     } else {
                         revealAnswer();
                     }
+                    break;
+                case '1':
+                    selectOption(0);
+                    break;
+                case '2':
+                    selectOption(1);
+                    break;
+                case '3':
+                    selectOption(2);
                     break;
             }
         });
