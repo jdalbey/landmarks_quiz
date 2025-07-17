@@ -149,6 +149,7 @@
             border: 1px solid #cccc00;
             margin: 10px 0;
             font-weight: bold;
+            float: right;
         }
 
         hr {
@@ -187,6 +188,9 @@
                 </div>
             </div>
         </div>
+
+        <div id="correctAnswer" class="correct-answer" style="display: none;"></div>
+
 
         <div class="user-response">
             <div class="response-section">
@@ -239,8 +243,6 @@
             </div>
         </div>
 
-        <div id="correctAnswer" class="correct-answer" style="display: none;"></div>
-
         <div class="buttons">
             <button id="prevBtn" onclick="previousItem()">Previous</button>
             <button id="revealBtn" onclick="revealAnswer()">Reveal Answer</button>
@@ -252,9 +254,13 @@
     <script>
         // Quiz data - Add your quiz items here
         const quizData = [
-            { image: "images/bear.jpg", agency: "SQF", description: "Lion", azimuth: "180°", distance: "2.5 mi", geographicName: "Lion Rock", reportTo: "Porterville" },
-            { image: "images/flower.jpg", agency: "SNF", description: "Oak Tree", azimuth: "90°", distance: "1.2 mi", geographicName: "Oak Grove", reportTo: "Sierra" },
-            { image: "images/crystal.jpg", agency: "SEKI", description: "Diamond", azimuth: "270°", distance: "0.8 mi", geographicName: "Diamond Peak", reportTo: "Ash Mtn" },
+            { image: "images/finger_rock.png", agency: "SNF", description: "Pointy rock", azimuth: "41° 25'", distance: "17.5 mi", geographicName: "Finger Rock", reportTo: "Sierra" },
+            { image: "images/manzanita_patch.png", agency: "SEKI", description: "Manzanita patch", azimuth: "114° 50'?", distance: "10.3 mi", geographicName: "Park Ridge", reportTo: "Ash Mtn?" },
+            { image: "images/eshom_point.png", agency: "SQF", description: "knob", azimuth: "140° 10'", distance: "15.25 mi", geographicName: "Eshom Point", reportTo: "Porterville" },
+            { image: "images/tivy_mtn.png", agency: "SRA", description: "mountain", azimuth: "268° 55'", distance: "13.25 mi", geographicName: "Tivy Mountain", reportTo: "Porterville" },
+            { image: "images/piedra_silo.png", agency: "SRA", description: "Silo", azimuth: "258.3°", distance: "19 mi", geographicName: "Silo near Piedra Road", reportTo: "None" },
+            { image: "images/boat_dock.png", agency: "SNF", description: "Boat Dock", azimuth: "292.9°? ", distance: "11.3 mi", geographicName: "Boat Dock", reportTo: "Sierra" },
+            { image: "images/ranch_on_12S19.png", agency: "SRA", description: "Ranch on road 12S19", azimuth: "293°?", distance: "4 mi", geographicName: "Ranch on 12S19", reportTo: "Porterville" },
         ];
 
         let currentIndex = 0;
@@ -338,7 +344,7 @@
             
             // Show correct answer
             const correctAnswerDiv = document.getElementById('correctAnswer');
-            correctAnswerDiv.innerHTML = `Agency: ${item.agency}<br>Geographic Name: ${item.geographicName}<br>Report to: ${item.reportTo}`;
+            correctAnswerDiv.innerHTML = `Geographic Name: ${item.geographicName}<br>Agency: ${item.agency}<br>Report to: ${item.reportTo}`;
             correctAnswerDiv.style.display = 'block';
             
             // Update button visibility
