@@ -75,8 +75,18 @@
             margin: 20px 0;
         }
 
+        .options-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
         .option {
-            margin: 10px 0;
             font-size: 14px;
         }
 
@@ -144,17 +154,20 @@
         <hr>
 
         <div class="options">
-            <div class="option">
-                <input type="radio" id="option0" name="answer" value="0" onclick="selectOption(0)">
-                <label for="option0">Animal</label>
-            </div>
-            <div class="option">
-                <input type="radio" id="option1" name="answer" value="1" onclick="selectOption(1)">
-                <label for="option1">Vegetable</label>
-            </div>
-            <div class="option">
-                <input type="radio" id="option2" name="answer" value="2" onclick="selectOption(2)">
-                <label for="option2">Mineral</label>
+            <div class="options-label">Category?</div>
+            <div class="options-row">
+                <div class="option">
+                    <input type="radio" id="option0" name="answer" value="0" onclick="selectOption(0)">
+                    <label for="option0">Animal</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="option1" name="answer" value="1" onclick="selectOption(1)">
+                    <label for="option1">Vegetable</label>
+                </div>
+                <div class="option">
+                    <input type="radio" id="option2" name="answer" value="2" onclick="selectOption(2)">
+                    <label for="option2">Mineral</label>
+                </div>
             </div>
         </div>
 
@@ -172,8 +185,8 @@
         // Quiz data - Add your quiz items here
         const quizData = [
             { image: "images/bear.jpg", answer: 0, description: "Lion", weight: "420 lbs", height: "4 ft" }, // Animal
-            { image: "images/flower.jpg", answer: 1, description: "Lily", weight: "4 lbs", height: "2 ft" }, // Vegetable
-            { image: "images/crystal.jpg", answer: 2, description: "Quartz", weight: "3.5 g/cm³", height: "Variable" }, // Mineral
+            { image: "images/flower.jpg", answer: 1, description: "Oak Tree", weight: "14,000 lbs", height: "80 ft" }, // Vegetable
+            { image: "images/crystal.jpg", answer: 2, description: "Diamond", weight: "3.5 g/cm³", height: "Variable" }, // Mineral
         ];
 
         const answerLabels = ["Animal", "Vegetable", "Mineral"];
