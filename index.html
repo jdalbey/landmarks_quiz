@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animal, Vegetable, or Mineral Quiz</title>
+    <title>Landmark Identification Quiz</title>
     <style>
         body {
             font-family: Verdana, sans-serif;
@@ -158,7 +158,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Animal, Vegetable, or Mineral?</h1>
+        <h1>Landmark Identification Quiz</h1>
         
         <div class="controls">
             <strong>Page <span id="pageCounter">1/24</span></strong>
@@ -178,58 +178,62 @@
                     <span id="infoDescription">-</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">Weight:</span>
-                    <span id="infoWeight">-</span>
+                    <span class="info-label">Azimuth:</span>
+                    <span id="infoAzimuth">-</span>
                 </div>
                 <div class="info-item">
-                    <span class="info-label">Height:</span>
-                    <span id="infoHeight">-</span>
+                    <span class="info-label">Distance:</span>
+                    <span id="infoDistance">-</span>
                 </div>
             </div>
         </div>
 
         <div class="user-response">
             <div class="response-section">
-                <label class="response-label" for="commonNameInput">Common Name?</label>
-                <input type="text" id="commonNameInput" class="common-name-input" placeholder="Enter common name">
+                <label class="response-label" for="commonNameInput">Geographic Name?</label>
+                <input type="text" id="commonNameInput" class="common-name-input" placeholder="Enter geographic name">
             </div>
             
             <div class="response-section">
-                <div class="response-label">Category?</div>
+                <div class="response-label">Agency?</div>
                 <div class="continent-checkboxes">
                     <div class="continent-option">
-                        <input type="radio" id="animal" name="category" value="Animal">
-                        <label for="option0">Animal</label>
+                        <input type="radio" id="sqf" name="agency" value="SQF">
+                        <label for="sqf">SQF</label>
                     </div>
                     <div class="continent-option">
-                        <input type="radio" id="vegetable" name="category" value="Vegetable">
-                        <label for="vegetable">Vegetable</label>
+                        <input type="radio" id="snf" name="agency" value="SNF">
+                        <label for="snf">SNF</label>
                     </div>
                     <div class="continent-option">
-                        <input type="radio" id="mineral" name="category" value="Mineral">
-                        <label for="mineral">Mineral</label>
+                        <input type="radio" id="seki" name="agency" value="SEKI">
+                        <label for="seki">SEKI</label>
+                    </div>
+                    <div class="continent-option">
+                        <input type="radio" id="sra" name="agency" value="SRA">
+                        <label for="sra">SRA</label>
                     </div>
                 </div>
             </div>
 
             <div class="response-section">
-                <div class="response-label">Continent(s)?</div>
+                <div class="response-label">Report to?</div>
                 <div class="continent-checkboxes">
                     <div class="continent-option">
-                        <input type="checkbox" id="americas" name="continent" value="Americas">
-                        <label for="americas">Americas</label>
+                        <input type="checkbox" id="porterville" name="reportTo" value="Porterville">
+                        <label for="porterville">Porterville</label>
                     </div>
                     <div class="continent-option">
-                        <input type="checkbox" id="europe" name="continent" value="Europe">
-                        <label for="europe">Europe</label>
+                        <input type="checkbox" id="sierra" name="reportTo" value="Sierra">
+                        <label for="sierra">Sierra</label>
                     </div>
                     <div class="continent-option">
-                        <input type="checkbox" id="asia" name="continent" value="Asia">
-                        <label for="asia">Asia</label>
+                        <input type="checkbox" id="ashmtn" name="reportTo" value="Ash Mtn">
+                        <label for="ashmtn">Ash Mtn</label>
                     </div>
                     <div class="continent-option">
-                        <input type="checkbox" id="africa" name="continent" value="Africa">
-                        <label for="africa">Africa</label>
+                        <input type="checkbox" id="none" name="reportTo" value="None">
+                        <label for="none">None</label>
                     </div>
                 </div>
             </div>
@@ -248,12 +252,11 @@
     <script>
         // Quiz data - Add your quiz items here
         const quizData = [
-            { image: "images/bear.jpg", answer: 0, description: "Lion", weight: "420 lbs", height: "4 ft", commonName: "Lion", continent: "Africa" }, // Animal
-            { image: "images/flower.jpg", answer: 1, description: "Oak Tree", weight: "14,000 lbs", height: "80 ft", commonName: "Oak Tree", continent: "Americas, Europe, Asia" }, // Vegetable
-            { image: "images/crystal.jpg", answer: 2, description: "Diamond", weight: "3.5 g/cm³", height: "Variable", commonName: "Diamond", continent: "Africa, Americas, Asia" }, // Mineral
+            { image: "images/bear.jpg", agency: "SQF", description: "Lion", azimuth: "180°", distance: "2.5 mi", geographicName: "Lion Rock", reportTo: "Porterville" },
+            { image: "images/flower.jpg", agency: "SNF", description: "Oak Tree", azimuth: "90°", distance: "1.2 mi", geographicName: "Oak Grove", reportTo: "Sierra" },
+            { image: "images/crystal.jpg", agency: "SEKI", description: "Diamond", azimuth: "270°", distance: "0.8 mi", geographicName: "Diamond Peak", reportTo: "Ash Mtn" },
         ];
 
-        const answerLabels = ["Animal", "Vegetable", "Mineral"];
         let currentIndex = 0;
         let isRandomMode = false;
         let answerRevealed = false;
@@ -295,8 +298,8 @@
             
             // Update info section
             document.getElementById('infoDescription').textContent = item.description;
-            document.getElementById('infoWeight').textContent = item.weight;
-            document.getElementById('infoHeight').textContent = item.height;
+            document.getElementById('infoAzimuth').textContent = item.azimuth;
+            document.getElementById('infoDistance').textContent = item.distance;
             
             // Reset answer state
             resetAnswer();
@@ -332,11 +335,10 @@
         function revealAnswer() {
             const itemIndex = getCurrentItemIndex();
             const item = quizData[itemIndex];
-            const correctAnswer = item.answer;
             
             // Show correct answer
             const correctAnswerDiv = document.getElementById('correctAnswer');
-            correctAnswerDiv.innerHTML = `Category: ${answerLabels[correctAnswer]}<br>Common Name: ${item.commonName}<br>Continent(s): ${item.continent}`;
+            correctAnswerDiv.innerHTML = `Agency: ${item.agency}<br>Geographic Name: ${item.geographicName}<br>Report to: ${item.reportTo}`;
             correctAnswerDiv.style.display = 'block';
             
             // Update button visibility
@@ -349,15 +351,15 @@
         // Reset answer display
         function resetAnswer() {
             // Clear all radio buttons
-            const radios = document.querySelectorAll('input[name="category"]');
+            const radios = document.querySelectorAll('input[name="agency"]');
             radios.forEach(radio => radio.checked = false);
             
-            // Clear common name input
+            // Clear geographic name input
             document.getElementById('commonNameInput').value = '';
             
-            // Clear continent checkboxes
-            const continentCheckboxes = document.querySelectorAll('input[name="continent"]');
-            continentCheckboxes.forEach(checkbox => checkbox.checked = false);
+            // Clear report to checkboxes
+            const reportToCheckboxes = document.querySelectorAll('input[name="reportTo"]');
+            reportToCheckboxes.forEach(checkbox => checkbox.checked = false);
             
             // Hide correct answer
             document.getElementById('correctAnswer').style.display = 'none';
@@ -440,20 +442,26 @@
                     break;
                 case '1':
                     if (!answerRevealed) {
-                        document.getElementById('option0').checked = true;
+                        document.getElementById('sqf').checked = true;
                         selectOption(0);
                     }
                     break;
                 case '2':
                     if (!answerRevealed) {
-                        document.getElementById('option1').checked = true;
+                        document.getElementById('snf').checked = true;
                         selectOption(1);
                     }
                     break;
                 case '3':
                     if (!answerRevealed) {
-                        document.getElementById('option2').checked = true;
+                        document.getElementById('seki').checked = true;
                         selectOption(2);
+                    }
+                    break;
+                case '4':
+                    if (!answerRevealed) {
+                        document.getElementById('sra').checked = true;
+                        selectOption(3);
                     }
                     break;
             }
