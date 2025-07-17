@@ -188,31 +188,30 @@
             </div>
         </div>
 
-
-        <div class="options">
-            <div class="options-label">Category?</div>
-            <div class="options-row">
-                <div class="option">
-                    <input type="radio" id="option0" name="answer" value="0" onclick="selectOption(0)">
-                    <label for="option0">Animal</label>
-                </div>
-                <div class="option">
-                    <input type="radio" id="option1" name="answer" value="1" onclick="selectOption(1)">
-                    <label for="option1">Vegetable</label>
-                </div>
-                <div class="option">
-                    <input type="radio" id="option2" name="answer" value="2" onclick="selectOption(2)">
-                    <label for="option2">Mineral</label>
-                </div>
-            </div>
-        </div>
-
         <div class="user-response">
             <div class="response-section">
                 <label class="response-label" for="commonNameInput">Common Name?</label>
                 <input type="text" id="commonNameInput" class="common-name-input" placeholder="Enter common name">
             </div>
             
+            <div class="response-section">
+                <div class="response-label">Category?</div>
+                <div class="continent-checkboxes">
+                    <div class="continent-option">
+                        <input type="radio" id="animal" name="category" value="Animal">
+                        <label for="option0">Animal</label>
+                    </div>
+                    <div class="continent-option">
+                        <input type="radio" id="vegetable" name="category" value="Vegetable">
+                        <label for="vegetable">Vegetable</label>
+                    </div>
+                    <div class="continent-option">
+                        <input type="radio" id="mineral" name="category" value="Mineral">
+                        <label for="mineral">Mineral</label>
+                    </div>
+                </div>
+            </div>
+
             <div class="response-section">
                 <div class="response-label">Continent(s)?</div>
                 <div class="continent-checkboxes">
@@ -350,7 +349,7 @@
         // Reset answer display
         function resetAnswer() {
             // Clear all radio buttons
-            const radios = document.querySelectorAll('input[name="answer"]');
+            const radios = document.querySelectorAll('input[name="category"]');
             radios.forEach(radio => radio.checked = false);
             
             // Clear common name input
