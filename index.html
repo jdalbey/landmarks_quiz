@@ -5,276 +5,124 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Animal, Vegetable, or Mineral Quiz</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: Verdana, sans-serif;
+            font-size: 12px;
+            margin: 20px;
+            background-color: #f0f0f0;
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
             background-color: white;
-            min-height: 100vh;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            border: 1px solid #ccc;
         }
 
-        .header {
+        h1 {
             text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
+            font-size: 18px;
+            margin-bottom: 20px;
         }
 
         .controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
+            text-align: center;
             margin-bottom: 20px;
-            flex-wrap: wrap;
         }
 
-        .randomize-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .randomize-checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        .randomize-label {
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .page-label {
-            font-size: 16px;
-            color: #666;
-            margin-right: 5px;
-        }
-
-        .page-counter {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .quiz-content {
-            display: flex;
-            flex-direction: column;
-            height: 70vh;
-        }
-
-        .image-section {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            background-color: #f9f9f9;
+        .image-container {
+            text-align: center;
+            margin: 20px 0;
+            border: 1px solid #999;
+            padding: 10px;
+            min-height: 400px;
+            background-color: #fafafa;
         }
 
         .quiz-image {
             max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 8px;
+            max-height: 380px;
         }
 
-        .divider {
-            height: 2px;
-            background-color: #ddd;
+        .options {
             margin: 20px 0;
         }
 
-        .options-section {
-            flex: 0 0 auto;
-        }
-
         .option {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            margin: 10px 0;
+            font-size: 14px;
         }
 
-        .option:hover {
-            background-color: #f0f0f0;
-        }
-
-        .checkbox {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #666;
-            border-radius: 3px;
-            margin-right: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .checkbox.selected {
-            background-color: #3498db;
-            border-color: #3498db;
-        }
-
-        .checkbox.selected::after {
-            content: '✓';
-            color: white;
-            font-weight: bold;
-        }
-
-        .checkbox.correct {
-            background-color: #f1c40f;
-            border-color: #f1c40f;
-        }
-
-        .checkbox.correct::after {
-            content: '✓';
-            color: #333;
-            font-weight: bold;
-        }
-
-        .option-text {
-            font-size: 18px;
-            cursor: pointer;
+        .option input[type="radio"] {
+            margin-right: 8px;
         }
 
         .buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .btn:hover {
-            opacity: 0.8;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-primary {
-            background-color: #3498db;
-            color: white;
-        }
-
-        .btn-success {
-            background-color: #27ae60;
-            color: white;
-        }
-
-        .btn-warning {
-            background-color: #f39c12;
-            color: white;
-        }
-
-        .btn-secondary {
-            background-color: #95a5a6;
-            color: white;
-        }
-
-        .loading {
             text-align: center;
-            font-size: 18px;
-            color: #666;
+            margin-top: 20px;
         }
 
-        @media (max-width: 600px) {
-            .controls {
-                flex-direction: column;
-                gap: 10px;
-            }
-            
-            .buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn {
-                width: 200px;
-            }
+        .buttons button {
+            margin: 0 5px;
+            padding: 8px 16px;
+            font-family: Verdana, sans-serif;
+            font-size: 12px;
+        }
+
+        .correct-answer {
+            background-color: #ffff99;
+            padding: 10px;
+            border: 1px solid #cccc00;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        hr {
+            margin: 20px 0;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>Animal, Vegetable, or Mineral?</h1>
-            <div class="controls">
-                <div class="randomize-container">
-                    <input type="checkbox" id="randomizeCheckbox" class="randomize-checkbox" onchange="toggleMode()">
-                    <label for="randomizeCheckbox" class="randomize-label">Randomize</label>
-                </div>
-                <div class="page-counter">
-                    <span class="page-label">Page</span>
-                    <span id="pageCounter">1/24</span>
-                </div>
+        <h1>Animal, Vegetable, or Mineral?</h1>
+        
+        <div class="controls">
+            <input type="checkbox" id="randomizeCheckbox" onchange="toggleMode()">
+            <label for="randomizeCheckbox">Randomize</label>
+            &nbsp;&nbsp;&nbsp;
+            <strong>Page <span id="pageCounter">1/24</span></strong>
+        </div>
+
+        <div class="image-container">
+            <img id="quizImage" class="quiz-image" src="" alt="Quiz item" style="display: none;">
+            <div id="loadingText">Loading...</div>
+        </div>
+
+        <hr>
+
+        <div class="options">
+            <div class="option">
+                <input type="radio" id="option0" name="answer" value="0" onclick="selectOption(0)">
+                <label for="option0">Animal</label>
+            </div>
+            <div class="option">
+                <input type="radio" id="option1" name="answer" value="1" onclick="selectOption(1)">
+                <label for="option1">Vegetable</label>
+            </div>
+            <div class="option">
+                <input type="radio" id="option2" name="answer" value="2" onclick="selectOption(2)">
+                <label for="option2">Mineral</label>
             </div>
         </div>
 
-        <div class="quiz-content">
-            <div class="image-section">
-                <img id="quizImage" class="quiz-image" src="" alt="Quiz item" style="display: none;">
-                <div class="loading" id="loadingText">Loading...</div>
-            </div>
+        <div id="correctAnswer" class="correct-answer" style="display: none;"></div>
 
-            <div class="divider"></div>
-
-            <div class="options-section">
-                <div class="option" onclick="selectOption(0)">
-                    <div class="checkbox" id="checkbox0"></div>
-                    <div class="option-text">Animal</div>
-                </div>
-                <div class="option" onclick="selectOption(1)">
-                    <div class="checkbox" id="checkbox1"></div>
-                    <div class="option-text">Vegetable</div>
-                </div>
-                <div class="option" onclick="selectOption(2)">
-                    <div class="checkbox" id="checkbox2"></div>
-                    <div class="option-text">Mineral</div>
-                </div>
-            </div>
-
-            <div class="buttons">
-                <button class="btn btn-secondary" id="prevBtn" onclick="previousItem()">Previous</button>
-                <button class="btn btn-success" id="revealBtn" onclick="revealAnswer()">Reveal Answer</button>
-                <button class="btn btn-warning" id="resetBtn" onclick="resetAnswer()" style="display: none;">Reset</button>
-                <button class="btn btn-secondary" id="nextBtn" onclick="nextItem()">Next</button>
-            </div>
+        <div class="buttons">
+            <button id="prevBtn" onclick="previousItem()">Previous</button>
+            <button id="revealBtn" onclick="revealAnswer()">Reveal Answer</button>
+            <button id="resetBtn" onclick="resetAnswer()" style="display: none;">Reset</button>
+            <button id="nextBtn" onclick="nextItem()">Next</button>
         </div>
     </div>
 
@@ -286,10 +134,11 @@
             { image: "images/crystal.jpg", answer: 2, description: "Diamond" }, // Mineral
         ];
 
+        const answerLabels = ["Animal", "Vegetable", "Mineral"];
         let currentIndex = 0;
         let isRandomMode = false;
         let answerRevealed = false;
-        let selectedOption = -1; // Track user's selected option
+        let selectedOption = -1;
 
         // Initialize the quiz
         function initializeQuiz() {
@@ -341,7 +190,6 @@
             const nextBtn = document.getElementById('nextBtn');
             
             if (isRandomMode) {
-                // In random mode, always allow navigation
                 prevBtn.disabled = false;
                 nextBtn.disabled = false;
             } else {
@@ -353,23 +201,19 @@
         // Select option (for user interaction)
         function selectOption(optionIndex) {
             if (answerRevealed) return;
-            
-            // Clear all checkboxes first
-            for (let i = 0; i < 3; i++) {
-                document.getElementById(`checkbox${i}`).classList.remove('selected');
-            }
-            
-            // Select the chosen option
             selectedOption = optionIndex;
-            document.getElementById(`checkbox${optionIndex}`).classList.add('selected');
         }
+
         // Reveal the correct answer
         function revealAnswer() {
             const itemIndex = getCurrentItemIndex();
-            const correctAnswer = quizData[itemIndex].answer;
+            const item = quizData[itemIndex];
+            const correctAnswer = item.answer;
             
-            // Show correct answer in yellow
-            document.getElementById(`checkbox${correctAnswer}`).classList.add('correct');
+            // Show correct answer
+            const correctAnswerDiv = document.getElementById('correctAnswer');
+            correctAnswerDiv.innerHTML = `Correct Answer: ${answerLabels[correctAnswer]}`;
+            correctAnswerDiv.style.display = 'block';
             
             // Update button visibility
             document.getElementById('revealBtn').style.display = 'none';
@@ -380,11 +224,12 @@
 
         // Reset answer display
         function resetAnswer() {
-            // Clear all checkboxes
-            for (let i = 0; i < 3; i++) {
-                const checkbox = document.getElementById(`checkbox${i}`);
-                checkbox.classList.remove('correct', 'selected');
-            }
+            // Clear all radio buttons
+            const radios = document.querySelectorAll('input[name="answer"]');
+            radios.forEach(radio => radio.checked = false);
+            
+            // Hide correct answer
+            document.getElementById('correctAnswer').style.display = 'none';
             
             // Reset selected option
             selectedOption = -1;
@@ -399,7 +244,6 @@
         // Navigate to next item
         function nextItem() {
             if (isRandomMode) {
-                // In random mode, just load a new random item
                 loadCurrentItem();
             } else {
                 if (currentIndex < quizData.length - 1) {
@@ -414,7 +258,6 @@
         // Navigate to previous item
         function previousItem() {
             if (isRandomMode) {
-                // In random mode, just load a new random item
                 loadCurrentItem();
             } else {
                 if (currentIndex > 0) {
@@ -432,7 +275,6 @@
             isRandomMode = checkbox.checked;
             
             if (!isRandomMode) {
-                // Reset to beginning when switching to sequential
                 currentIndex = 0;
             }
             
@@ -440,9 +282,6 @@
             loadCurrentItem();
             updateNavigationButtons();
         }
-
-        // Event listeners
-        document.getElementById('randomizeCheckbox').addEventListener('change', toggleMode);
 
         // Initialize the quiz when page loads
         window.addEventListener('load', initializeQuiz);
@@ -469,13 +308,22 @@
                     }
                     break;
                 case '1':
-                    selectOption(0);
+                    if (!answerRevealed) {
+                        document.getElementById('option0').checked = true;
+                        selectOption(0);
+                    }
                     break;
                 case '2':
-                    selectOption(1);
+                    if (!answerRevealed) {
+                        document.getElementById('option1').checked = true;
+                        selectOption(1);
+                    }
                     break;
                 case '3':
-                    selectOption(2);
+                    if (!answerRevealed) {
+                        document.getElementById('option2').checked = true;
+                        selectOption(2);
+                    }
                     break;
             }
         });
