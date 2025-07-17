@@ -38,11 +38,37 @@
             padding: 10px;
             min-height: 400px;
             background-color: #fafafa;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .image-section {
+            flex: 1;
+            text-align: center;
         }
 
         .quiz-image {
             max-width: 100%;
             max-height: 380px;
+        }
+
+        .info-section {
+            flex: 0 0 200px;
+            text-align: left;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            display: block;
         }
 
         .options {
@@ -95,8 +121,24 @@
         </div>
 
         <div class="image-container">
-            <img id="quizImage" class="quiz-image" src="" alt="Quiz item" style="display: none;">
-            <div id="loadingText">Loading...</div>
+            <div class="image-section">
+                <img id="quizImage" class="quiz-image" src="" alt="Quiz item" style="display: none;">
+                <div id="loadingText">Loading...</div>
+            </div>
+            <div class="info-section">
+                <div class="info-item">
+                    <span class="info-label">Description:</span>
+                    <span id="infoDescription">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Weight:</span>
+                    <span id="infoWeight">-</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Height:</span>
+                    <span id="infoHeight">-</span>
+                </div>
+            </div>
         </div>
 
         <hr>
@@ -129,9 +171,9 @@
     <script>
         // Quiz data - Add your quiz items here
         const quizData = [
-            { image: "images/bear.jpg", answer: 0, description: "Lion" }, // Animal
-            { image: "images/flower.jpg", answer: 1, description: "Oak Tree" }, // Vegetable
-            { image: "images/crystal.jpg", answer: 2, description: "Diamond" }, // Mineral
+            { image: "images/bear.jpg", answer: 0, description: "Lion", weight: "420 lbs", height: "4 ft" }, // Animal
+            { image: "images/flower.jpg", answer: 1, description: "Oak Tree", weight: "14 lbs", height: "80 ft" }, // Vegetable
+            { image: "images/crystal.jpg", answer: 2, description: "Diamond", weight: "3.5 g/cm³", height: "Variable" }, // Mineral
         ];
 
         const answerLabels = ["Animal", "Vegetable", "Mineral"];
@@ -173,6 +215,11 @@
                 loadingText.style.display = 'none';
                 image.style.display = 'block';
             };
+            
+            // Update info section
+            document.getElementById('infoDescription').textContent = item.description;
+            document.getElementById('infoWeight').textContent = item.weight;
+            document.getElementById('infoHeight').textContent = item.height;
             
             // Reset answer state
             resetAnswer();
