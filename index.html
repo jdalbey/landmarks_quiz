@@ -161,13 +161,15 @@
     <div class="container">
         <h1>Landmark Identification Quiz</h1>
         
-        <div class="controls">
-            <strong>Page <span id="pageCounter">1/24</span></strong>
-            &nbsp;&nbsp;&nbsp;
-            <input type="checkbox" id="randomizeCheckbox" onchange="toggleMode()">
-            <label for="randomizeCheckbox">Randomize</label>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <label for="lookoutSelect" style="font-weight: bold; margin-right: 10px;">Lookout:</label>
+            <select id="lookoutSelect" onchange="changeLookout()" style="font-family: Verdana, sans-serif; font-size: 12px; padding: 5px;">
+                <option value="Delilah">Delilah</option>
+                <option value="Park Ridge">Park Ridge</option>
+                <option value="Buck Rock">Buck Rock</option>
+            </select>
         </div>
-
+        
         <div class="image-container">
             <div class="image-section">
                 <img id="quizImage" class="quiz-image" src="" alt="Quiz item" style="display: none;">
@@ -190,7 +192,6 @@
         </div>
 
         <div id="correctAnswer" class="correct-answer" style="display: none;"></div>
-
 
         <div class="user-response">
             <div class="response-section">
@@ -249,36 +250,63 @@
             <button id="resetBtn" onclick="resetAnswer()" style="display: none;">Reset</button>
             <button id="nextBtn" onclick="nextItem()">Next</button>
         </div>
+
+        <div class="controls">
+            <strong>Page <span id="pageCounter">1/7</span></strong>
+            &nbsp;&nbsp;&nbsp;
+            <input type="checkbox" id="randomizeCheckbox" onchange="toggleMode()">
+            <label for="randomizeCheckbox">Randomize</label>
+        </div>
     </div>
 
     <script>
-        // Quiz data - Add your quiz items here
-        const quizData = [
-            { image: "images/finger_rock.png", agency: "SNF", description: "Pointy rock", azimuth: "41° 25'", distance: "17.5 mi", geographicName: "Finger Rock", reportTo: "Sierra" },
-            { image: "images/manzanita_patch.png", agency: "SEKI", description: "Manzanita patch", azimuth: "114° 50'?", distance: "10.3 mi", geographicName: "Park Ridge", reportTo: "Ash Mtn?" },
-            { image: "images/eshom_point.png", agency: "SQF", description: "knob", azimuth: "140° 10'", distance: "15.25 mi", geographicName: "Eshom Point", reportTo: "Porterville" },
-            { image: "images/tivy_mtn.png", agency: "SRA", description: "mountain", azimuth: "268° 55'", distance: "13.25 mi", geographicName: "Tivy Mountain", reportTo: "Porterville" },
-            { image: "images/piedra_silo.png", agency: "SRA", description: "Silo", azimuth: "258.3°", distance: "19 mi", geographicName: "Silo near Piedra Road", reportTo: "None" },
-            { image: "images/boat_dock.png", agency: "SNF", description: "Boat Dock", azimuth: "292.9°? ", distance: "11.3 mi", geographicName: "Boat Dock", reportTo: "Sierra" },
-            { image: "images/ranch_on_12S19.png", agency: "SRA", description: "Ranch on road 12S19", azimuth: "293°?", distance: "4 mi", geographicName: "Ranch on 12S19", reportTo: "Porterville" },
-        ];
+        // Quiz data - Refactored structure with lookout as key
+        const quizData = {
+            "Delilah": [
+                { image: "images/finger_rock.png", agency: "SNF", description: "Pointy rock", azimuth: "41° 25'", distance: "17.5 mi", geographicName: "Finger Rock", reportTo: "Sierra" },
+                { image: "images/manzanita_patch.png", agency: "SEKI", description: "Manzanita patch", azimuth: "114° 50'?", distance: "10.3 mi", geographicName: "Park Ridge", reportTo: "Ash Mtn?" },
+                { image: "images/eshom_point.png", agency: "SQF", description: "knob", azimuth: "140° 10'", distance: "15.25 mi", geographicName: "Eshom Point", reportTo: "Porterville" },
+                { image: "images/tivy_mtn.png", agency: "SRA", description: "mountain", azimuth: "268° 55'", distance: "13.25 mi", geographicName: "Tivy Mountain", reportTo: "Porterville" },
+                { image: "images/piedra_silo.png", agency: "SRA", description: "Silo", azimuth: "258.3°", distance: "19 mi", geographicName: "Silo near Piedra Road", reportTo: "None" },
+                { image: "images/boat_dock.png", agency: "SNF", description: "Boat Dock", azimuth: "292.9°? ", distance: "11.3 mi", geographicName: "Boat Dock", reportTo: "Sierra" },
+                { image: "images/ranch_on_12S19.png", agency: "SRA", description: "Ranch on road 12S19", azimuth: "293°?", distance: "4 mi", geographicName: "Ranch on 12S19", reportTo: "Porterville" }
+            ],
+            "Park Ridge": [
+                { image: "images/mitchell_peak.png", agency: "SQF", description: "Mountain top", azimuth: "87° 30'", distance: "13.2 mi", geographicName: "Mitchell Peak", reportTo: "Porterville" },
+                { image: "images/bear_mtn_tuu.png", agency: "SRA", description: "Mountain", azimuth: "169° 30'", distance: "10.25 mi", geographicName: "Bear Mountain (Tulare)", reportTo: "Porterville" }
+            ],
+            "Buck Rock": [
+                { image: "images/obelisk.png", agency: "SNF", description: "Rocky crag", azimuth: "1.5° ", distance: "12 mi", geographicName: "Obelisk", reportTo: "Sierra" },
+                { image: "images/mt_brewer.png", agency: "SEKI", description: "Mountain", azimuth: "96° ", distance: "25 mi", geographicName: "Mt. Brewer", reportTo: "Ash Mtn?" }
+            ]
+        };
 
         let currentIndex = 0;
         let isRandomMode = false;
         let answerRevealed = false;
         let selectedOption = -1;
+        let currentRandomIndex = 0; // Track current item in random mode
+        let currentLookout = "Delilah"; // Track current lookout
+        let currentLookoutData = []; // Store current lookout data
 
         // Initialize the quiz
         function initializeQuiz() {
+            setCurrentLookoutData();
+            document.getElementById('lookoutSelect').value = currentLookout
             updatePageCounter();
             loadCurrentItem();
             updateNavigationButtons();
         }
 
+        // Set current lookout data
+        function setCurrentLookoutData() {
+            currentLookoutData = quizData[currentLookout] || [];
+        }
+
         // Get current item index based on mode
         function getCurrentItemIndex() {
             if (isRandomMode) {
-                return Math.floor(Math.random() * quizData.length);
+                return currentRandomIndex;
             }
             return currentIndex;
         }
@@ -286,7 +314,12 @@
         // Load current quiz item
         function loadCurrentItem() {
             const itemIndex = getCurrentItemIndex();
-            const item = quizData[itemIndex];
+            const item = currentLookoutData[itemIndex];
+            
+            if (!item) {
+                console.error('No item found at index:', itemIndex, 'for lookout:', currentLookout);
+                return;
+            }
             
             const image = document.getElementById('quizImage');
             const loadingText = document.getElementById('loadingText');
@@ -314,7 +347,11 @@
         // Update page counter
         function updatePageCounter() {
             const counter = document.getElementById('pageCounter');
-            counter.textContent = `${currentIndex + 1}/${quizData.length}`;
+            if (isRandomMode) {
+                counter.textContent = `${currentRandomIndex + 1}/${currentLookoutData.length}`;
+            } else {
+                counter.textContent = `${currentIndex + 1}/${currentLookoutData.length}`;
+            }
         }
 
         // Update navigation buttons
@@ -322,13 +359,9 @@
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
             
-            if (isRandomMode) {
-                prevBtn.disabled = false;
-                nextBtn.disabled = false;
-            } else {
-                prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex === quizData.length - 1;
-            }
+            // In random mode or with wraparound, buttons are always enabled
+            prevBtn.disabled = false;
+            nextBtn.disabled = false;
         }
 
         // Select option (for user interaction)
@@ -340,7 +373,12 @@
         // Reveal the correct answer
         function revealAnswer() {
             const itemIndex = getCurrentItemIndex();
-            const item = quizData[itemIndex];
+            const item = currentLookoutData[itemIndex];
+            
+            if (!item) {
+                console.error('No item found for revealing answer');
+                return;
+            }
             
             // Show correct answer
             const correctAnswerDiv = document.getElementById('correctAnswer');
@@ -383,28 +421,34 @@
         // Navigate to next item
         function nextItem() {
             if (isRandomMode) {
+                currentRandomIndex = Math.floor(Math.random() * currentLookoutData.length);
+                updatePageCounter();
                 loadCurrentItem();
             } else {
-                if (currentIndex < quizData.length - 1) {
-                    currentIndex++;
-                    updatePageCounter();
-                    loadCurrentItem();
-                    updateNavigationButtons();
+                currentIndex++;
+                if (currentIndex >= currentLookoutData.length) {
+                    currentIndex = 0; // Wrap around to first item
                 }
+                updatePageCounter();
+                loadCurrentItem();
+                updateNavigationButtons();
             }
         }
 
         // Navigate to previous item
         function previousItem() {
             if (isRandomMode) {
+                currentRandomIndex = Math.floor(Math.random() * currentLookoutData.length);
+                updatePageCounter();
                 loadCurrentItem();
             } else {
-                if (currentIndex > 0) {
-                    currentIndex--;
-                    updatePageCounter();
-                    loadCurrentItem();
-                    updateNavigationButtons();
+                currentIndex--;
+                if (currentIndex < 0) {
+                    currentIndex = currentLookoutData.length - 1; // Wrap around to last item
                 }
+                updatePageCounter();
+                loadCurrentItem();
+                updateNavigationButtons();
             }
         }
 
@@ -413,10 +457,32 @@
             const checkbox = document.getElementById('randomizeCheckbox');
             isRandomMode = checkbox.checked;
             
-            if (!isRandomMode) {
-                currentIndex = 0;
+            if (isRandomMode) {
+                // When switching to random mode, generate a random index
+                currentRandomIndex = Math.floor(Math.random() * currentLookoutData.length);
+            } else {
+                // When switching to sequential mode, set currentIndex to match the current random item
+                currentIndex = currentRandomIndex;
             }
             
+            updatePageCounter();
+            loadCurrentItem();
+            updateNavigationButtons();
+        }
+
+        // Change lookout selection
+        function changeLookout() {
+            const select = document.getElementById('lookoutSelect');
+            currentLookout = select.value;
+            
+            // Reset to first item when changing lookout
+            currentIndex = 0;
+            currentRandomIndex = 0;
+            
+            // Set data for new lookout
+            setCurrentLookoutData();
+            
+            // Update display
             updatePageCounter();
             loadCurrentItem();
             updateNavigationButtons();
