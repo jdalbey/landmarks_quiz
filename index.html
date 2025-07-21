@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Landmark Identification Quiz</title>
+    <meta name="author" content="John Dalbey">
+    <meta name="copyright" content="© 2025 John Dalbey">
+    <meta name="license" content="MIT License">
+    <meta name="version" content="2025.07.21-a">
     <style>
         body {
             font-family: Verdana, sans-serif;
@@ -20,10 +24,33 @@
             border: 1px solid #ccc;
         }
 
-        h1 {
-            text-align: center;
-            font-size: 18px;
+        /* Modified header layout - H1 left, selector right, same line */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            margin: 0;
+        }
+
+        .lookout-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lookout-selector label {
+            font-weight: bold;
+        }
+
+        .lookout-selector select {
+            font-family: Verdana, sans-serif;
+            font-size: 12px;
+            padding: 5px;
         }
 
         .controls {
@@ -36,7 +63,7 @@
             margin: 20px 0;
             border: 1px solid #999;
             padding: 10px;
-            min-height: 400px;
+            /* min-height: 400px; */
             background-color: #fafafa;
             display: flex;
             align-items: flex-start;
@@ -96,7 +123,7 @@
 
         .buttons {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 5px;
         }
 
         .buttons button {
@@ -107,19 +134,26 @@
         }
 
         .user-response {
-            margin: 20px 0;
-            padding: 15px;
-            /* border: 1px solid #ddd; */
+            margin: 10px 0;
+            padding: 5px;
         }
 
+        /* Modified response sections - labels and widgets on same line */
         .response-section {
+            display: flex;
+            align-items: center;
             margin-bottom: 15px;
+            gap: 15px;
         }
 
         .response-label {
             font-weight: bold;
-            display: block;
-            margin-bottom: 5px;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .response-content {
+            flex: 1;
         }
 
         .common-name-input {
@@ -139,7 +173,8 @@
             font-size: 12px;
         }
 
-        .continent-option input[type="checkbox"] {
+        .continent-option input[type="checkbox"],
+        .continent-option input[type="radio"] {
             margin-right: 8px;
         }
 
@@ -159,15 +194,17 @@
 </head>
 <body>
     <div class="container">
-        <h1>Landmark Identification Quiz</h1>
-        
-        <div style="text-align: center; margin-bottom: 20px;">
-            <label for="lookoutSelect" style="font-weight: bold; margin-right: 10px;">Lookout:</label>
-            <select id="lookoutSelect" onchange="changeLookout()" style="font-family: Verdana, sans-serif; font-size: 12px; padding: 5px;">
-                <option value="Delilah">Delilah</option>
-                <option value="Park Ridge">Park Ridge</option>
-                <option value="Buck Rock">Buck Rock</option>
-            </select>
+        <!-- Modified header: H1 left, lookout selector right -->
+        <div class="header">
+            <h1>Landmark Identification Quiz</h1>
+            <div class="lookout-selector">
+                <label for="lookoutSelect">Lookout:</label>
+                <select id="lookoutSelect" onchange="changeLookout()">
+                    <option value="Delilah">Delilah</option>
+                    <option value="Park Ridge">Park Ridge</option>
+                    <option value="Buck Rock">Buck Rock</option>
+                </select>
+            </div>
         </div>
         
         <div class="image-container">
@@ -193,52 +230,59 @@
 
         <div id="correctAnswer" class="correct-answer" style="display: none;"></div>
 
+        <!-- Modified user response: labels and widgets on same line -->
         <div class="user-response">
             <div class="response-section">
-                <label class="response-label" for="commonNameInput">Geographic Name?</label>
-                <input type="text" id="commonNameInput" class="common-name-input" placeholder="Enter geographic name">
+                <div class="response-label">Geographic Name?</div>
+                <div class="response-content">
+                    <input type="text" id="commonNameInput" class="common-name-input" placeholder="Enter geographic name">
+                </div>
             </div>
             
             <div class="response-section">
                 <div class="response-label">Agency Jurisdiction?</div>
-                <div class="continent-checkboxes">
-                    <div class="continent-option">
-                        <input type="radio" id="sqf" name="agency" value="SQF">
-                        <label for="sqf">SQF</label>
-                    </div>
-                    <div class="continent-option">
-                        <input type="radio" id="snf" name="agency" value="SNF">
-                        <label for="snf">SNF</label>
-                    </div>
-                    <div class="continent-option">
-                        <input type="radio" id="seki" name="agency" value="SEKI">
-                        <label for="seki">SEKI</label>
-                    </div>
-                    <div class="continent-option">
-                        <input type="radio" id="sra" name="agency" value="SRA">
-                        <label for="sra">SRA</label>
+                <div class="response-content">
+                    <div class="continent-checkboxes">
+                        <div class="continent-option">
+                            <input type="radio" id="sqf" name="agency" value="SQF">
+                            <label for="sqf">SQF</label>
+                        </div>
+                        <div class="continent-option">
+                            <input type="radio" id="snf" name="agency" value="SNF">
+                            <label for="snf">SNF</label>
+                        </div>
+                        <div class="continent-option">
+                            <input type="radio" id="seki" name="agency" value="SEKI">
+                            <label for="seki">SEKI</label>
+                        </div>
+                        <div class="continent-option">
+                            <input type="radio" id="sra" name="agency" value="SRA">
+                            <label for="sra">SRA</label>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div class="response-section">
                 <div class="response-label">Report to?</div>
-                <div class="continent-checkboxes">
-                    <div class="continent-option">
-                        <input type="checkbox" id="porterville" name="reportTo" value="Porterville">
-                        <label for="porterville">Porterville</label>
-                    </div>
-                    <div class="continent-option">
-                        <input type="checkbox" id="sierra" name="reportTo" value="Sierra">
-                        <label for="sierra">Sierra</label>
-                    </div>
-                    <div class="continent-option">
-                        <input type="checkbox" id="ashmtn" name="reportTo" value="Ash Mtn">
-                        <label for="ashmtn">Ash Mtn</label>
-                    </div>
-                    <div class="continent-option">
-                        <input type="checkbox" id="none" name="reportTo" value="None">
-                        <label for="none">None</label>
+                <div class="response-content">
+                    <div class="continent-checkboxes">
+                        <div class="continent-option">
+                            <input type="checkbox" id="porterville" name="reportTo" value="Porterville">
+                            <label for="porterville">Porterville</label>
+                        </div>
+                        <div class="continent-option">
+                            <input type="checkbox" id="sierra" name="reportTo" value="Sierra">
+                            <label for="sierra">Sierra</label>
+                        </div>
+                        <div class="continent-option">
+                            <input type="checkbox" id="ashmtn" name="reportTo" value="Ash Mtn">
+                            <label for="ashmtn">Ash Mtn</label>
+                        </div>
+                        <div class="continent-option">
+                            <input type="checkbox" id="none" name="reportTo" value="None">
+                            <label for="none">None</label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -510,30 +554,6 @@
                         resetAnswer();
                     } else {
                         revealAnswer();
-                    }
-                    break;
-                case '1':
-                    if (!answerRevealed) {
-                        document.getElementById('sqf').checked = true;
-                        selectOption(0);
-                    }
-                    break;
-                case '2':
-                    if (!answerRevealed) {
-                        document.getElementById('snf').checked = true;
-                        selectOption(1);
-                    }
-                    break;
-                case '3':
-                    if (!answerRevealed) {
-                        document.getElementById('seki').checked = true;
-                        selectOption(2);
-                    }
-                    break;
-                case '4':
-                    if (!answerRevealed) {
-                        document.getElementById('sra').checked = true;
-                        selectOption(3);
                     }
                     break;
             }
