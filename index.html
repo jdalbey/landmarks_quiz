@@ -57,13 +57,14 @@
             text-align: center;
             margin-bottom: 20px;
         }
-
+/* The 420px gives the 380px image room plus the 10px top/bottom padding. If you find images are still taller than the container, increase height slightly or reduce max-height on .quiz-image to match — the key is that height on the container must be set so the layout below it doesn't reflow when images change.*/
         .image-container {
             text-align: center;
             margin: 20px 0;
             border: 1px solid #999;
             padding: 10px;
-            /* min-height: 400px; */
+            height: 400px;
+            overflow: hidden;    /* prevent overflow if image is taller */
             background-color: #fafafa;
             display: flex;
             align-items: flex-start;
@@ -78,6 +79,7 @@
         .quiz-image {
             max-width: 100%;
             max-height: 380px;
+            object-fit: contain; /* images scale down to fit without distorting */
         }
 
         .info-section {
