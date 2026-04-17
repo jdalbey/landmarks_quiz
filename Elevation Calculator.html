@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elevation Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        select:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        .result {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+        .result-label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .result-value {
+            font-size: 24px;
+            color: #2c5530;
+            font-family: monospace;
+        }
+        .formula {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Elevation Calculator</h1>
+        
+        <div class="input-group">
+            <label for="location">Location:</label>
+            <select id="location">
+                <option value="5226">Delilah (5226)</option>
+                <option value="7570">Park Ridge (7570)</option>
+                <option value="8505">Buck Rock (8505)</option>
+            </select>
+        </div>
+        
+        <div class="input-group">
+            <label for="distance">Distance (miles):</label>
+            <input type="number" id="distance" step="0.1" placeholder="Enter distance in miles">
+        </div>
+        
+        <div class="input-group">
+            <label for="angle">Vertical Angle (degrees):</label>
+            <input type="number" id="angle" step="0.1" placeholder="Enter vertical angle in degrees (+ or -)">
+        </div>
+        
+        <div class="result">
+            <div class="result-label">Target elevation:</div>
+            <div class="result-value" id="result">--</div>
+        </div>
+        
+        <div class="formula">
+            <strong>Formula:</strong> Base Value + (Distance × 5280 × tan(Angle°))
+        </div>
+    </div>
+
+    <script>
+        function calculateResult() {
+            const locationValue = parseFloat(document.getElementById('location').value);
+            const distance = parseFloat(document.getElementById('distance').value);
+            const angleDegrees = parseFloat(document.getElementById('angle').value);
+            
+            // Check if all inputs have valid values
+            if (isNaN(distance) || isNaN(angleDegrees)) {
+                document.getElementById('result').textContent = '--';
+                return;
+            }
+            
+            // Convert angle from degrees to radians
+            const angleRadians = angleDegrees * (Math.PI / 180);
+            
+            // Calculate: dropdown value + distance * 5280 * tan(angle)
+            const result = locationValue + (distance * 5280 * Math.tan(angleRadians));
+            
+            // Display result with 2 decimal places
+            document.getElementById('result').textContent = result.toFixed(0);
+        }
+        
+        // Add event listeners to recalculate when inputs change
+        document.getElementById('location').addEventListener('change', calculateResult);
+        document.getElementById('distance').addEventListener('input', calculateResult);
+        document.getElementById('angle').addEventListener('input', calculateResult);
+        
+        // Initial calculation
+        calculateResult();
+    </script>
+</body>
+</html>
