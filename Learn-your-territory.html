@@ -274,8 +274,12 @@
     svg.addEventListener('touchstart', onTap,  { passive: false });
     window.addEventListener('resize',  () => { getRealSize(); shownLabels = new Set(); buildSVG(); });
 
-    getRealSize();
-    buildSVG();
+    // Build the SVG once the photo has loaded and the browser knows its
+    // rendered dimensions. If the image is already cached and 'load' has
+    // already fired, call buildSVG() immediately.
+    const img = document.getElementById('landscape');
+    function init() { getRealSize(); buildSVG(); }
+    if (img.complete) { init(); } else { img.addEventListener('load', init); }
   </script>
 </body>
 </html>
