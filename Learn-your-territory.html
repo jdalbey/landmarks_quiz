@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn Your Territory</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; padding: 1rem; background: #f5f5f5; }
+    h1 { font-size: 18px; font-weight: 500; margin-bottom: 0.5rem; color: #222; }
+    #instructions { font-size: 13px; color: #666; margin-bottom: 10px; line-height: 1.6; }
+    #wrapper { position: relative; display: inline-block; width: 100%; user-select: none; }
+    #landscape { display: block; width: 100%; height: auto; }
+    #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
+  </style>
+</head>
+<body>
+
+  <h1>Learn Your Territory</h1>
+  <p id="instructions">Hover near a line or landmark to highlight it. Click to toggle the label.</p>
+
+  <div id="wrapper">
+    <!--
+      OPTION A (current): generated canvas placeholder.
+      OPTION B (your photo): replace the <canvas> with:
+        <img id="landscape" src="your-photo.jpg" alt="Landscape">
+      and remove the drawLandscape() call below.
+    -->
+    <img id="landscape" src="DelilahAfternoonWest.jpg" alt="Landscape">
+    <svg id="overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <script>
+    // -------------------------------------------------------------------------
+    // CONFIGURATION — edit these values to match your photo and landmarks
+    // -------------------------------------------------------------------------
+
+    // Native pixel dimensions of your photograph
+    const IMAGE_NATIVE_WIDTH  = 1711;
+    const IMAGE_NATIVE_HEIGHT = 752;
+
+    // Landmark data. All coordinates are in native image pixels, exactly as
+    // reported by your image editor (Photoshop, GIMP, Preview, etc.).
+    //
+    // x1, y1 — top end of the line (undecorated, label appears above here)
+    // x2, y2 — bottom end of the line (dot, points to the land feature)
+    // label  — name displayed when the user clicks the line
+    // hidden — true  → land feature is not directly visible (canyon, valley, etc.)
+    //                   tip is drawn as an arrowhead
+    //          false → land feature is visible; tip is drawn as a filled dot
+    const landmarks = [
+      { id:0,  x1: 862, y1: 60, x2: 862,  y2: 286, label: "Bald Mt/FKU", hidden: false},
+      { id:10, x1:230, y1: 60, x2:230,  y2: 375, label: "Dude Ridge/SQF", hidden: false},
+      { id:11, x1:1200, y1: 60, x2:1200,  y2: 190, label: "Bear Mt/FKU", hidden: false},
+      { id:12, x1:1660, y1:60, x2:1660, y2:240, label: "Dalton Mt", hidden: false},
+      { id:9, x1:1293, y1:60, x2:1293, y2:324, label: "Elwood Rd/FKU", hidden: true},
+      { id:8, x1:525, y1:60, x2:525, y2:390, label: "Squaw Valley (area)/FKU", hidden: false},
+      //{ id:, x1:, y1:, x2:, y2:, label: ""  },
+    ];
+
+    // Pixel distance from the pointer within which a line is considered hovered
+    const HOVER_DIST = 12;
+
+    // -------------------------------------------------------------------------
+    // Pre-compute fractional coordinates for responsive scaling
+    // -------------------------------------------------------------------------
+    landmarks.forEach(lm => {
+      lm._x1f = lm.x1 / IMAGE_NATIVE_WIDTH;
+      lm._y1f = lm.y1 / IMAGE_NATIVE_HEIGHT;
+      lm._x2f = lm.x2 / IMAGE_NATIVE_WIDTH;
+      lm._y2f = lm.y2 / IMAGE_NATIVE_HEIGHT;
+    });
+
+    const W = IMAGE_NATIVE_WIDTH, H = IMAGE_NATIVE_HEIGHT;
+    // -------------------------------------------------------------------------
+    // SVG overlay — interaction logic
+    // -------------------------------------------------------------------------
+    const svg = document.getElementById('overlay');
+    const NS = 'http://www.w3.org/2000/svg';
+
+    let svgW = W, svgH = H;
+    let lines = [], labels = [];
+    let activeId = -1;
+    let shownLabels = new Set();
+
+    function sp(frac, dim) { return frac * dim; }
+
+    function buildSVG() {
+      svg.innerHTML = '';
+      svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+      lines = []; labels = [];
+
+      // Arrowhead marker definitions — one for default (black), one for hover (white)
+      const defs = document.createElementNS(NS, 'defs');
+
+      function makeMarker(id, color) {
+        const marker = document.createElementNS(NS, 'marker');
+        marker.setAttribute('id', id);
+        marker.setAttribute('markerWidth',  '8');
+        marker.setAttribute('markerHeight', '6');
+        marker.setAttribute('refX',  '8');
+        marker.setAttribute('refY',  '3');
+        marker.setAttribute('orient', 'auto');
+        const path = document.createElementNS(NS, 'path');
+        path.setAttribute('d', 'M0,0 L8,3 L0,6 Z');
+        path.setAttribute('fill', color);
+        marker.appendChild(path);
+        return marker;
+      }
+
+      defs.appendChild(makeMarker('arrow-dark',  'rgba(0,0,0,0.8)'));
+      defs.appendChild(makeMarker('arrow-light', 'rgba(255,255,255,0.95)'));
+      svg.appendChild(defs);
+
+      landmarks.forEach(lm => {
+        const x1 = sp(lm._x1f, svgW), y1 = sp(lm._y1f, svgH);
+        const x2 = sp(lm._x2f, svgW), y2 = sp(lm._y2f, svgH);
+
+        // Invisible wide hit-target line for easy mouse/touch selection
+        const hitLine = document.createElementNS(NS, 'line');
+        hitLine.setAttribute('x1', x1); hitLine.setAttribute('y1', y1);
+        hitLine.setAttribute('x2', x2); hitLine.setAttribute('y2', y2);
+        hitLine.setAttribute('stroke', 'transparent');
+        hitLine.setAttribute('stroke-width', '20');
+        hitLine.style.cursor = 'pointer';
+        hitLine.dataset.lid = lm.id;
+        svg.appendChild(hitLine);
+
+        // Visible annotation line.
+        // For arrow landmarks, stop the line a few px short so the arrowhead
+        // sits flush at x2,y2 rather than overlapping it.
+        const ARROW_INSET = 8;
+        const lineX2 = lm.hidden ? x2 - (x2 === x1 ? 0 : ARROW_INSET) : x2;
+        const lineY2 = lm.hidden ? y2 - (y2  > y1  ? ARROW_INSET : -ARROW_INSET) : y2;
+
+        const line = document.createElementNS(NS, 'line');
+        line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+        line.setAttribute('x2', lineX2); line.setAttribute('y2', lineY2);
+        line.setAttribute('stroke', 'rgba(0,0,0,0.8)');
+        line.setAttribute('stroke-width', '1.5');
+        if (lm.hidden) line.setAttribute('marker-end', 'url(#arrow-dark)');
+        line.style.pointerEvents = 'none';
+        svg.appendChild(line);
+        lines.push({ line, id: lm.id, hidden: lm.hidden });
+
+        // Tip symbol: dot for visible landmarks, arrowhead for hidden ones.
+        // (Arrow landmarks get their tip from the SVG marker on the line.)
+        if (!lm.hidden) {
+          const dot = document.createElementNS(NS, 'circle');
+          dot.setAttribute('cx', x2); dot.setAttribute('cy', y2);
+          dot.setAttribute('r', '3');
+          dot.setAttribute('fill', 'rgba(0,0,0,0.8)');
+          dot.dataset.lid = lm.id;
+          dot.style.pointerEvents = 'none';
+          svg.appendChild(dot);
+        }
+
+        // Label group (hidden until clicked)
+        const labelG = document.createElementNS(NS, 'g');
+        labelG.style.pointerEvents = 'none';
+        labelG.style.display = shownLabels.has(lm.id) ? 'block' : 'none';
+
+        const bg = document.createElementNS(NS, 'rect');
+        bg.setAttribute('rx', '3');
+        bg.setAttribute('fill', 'rgba(0,0,0,0.65)');
+
+        // Text baseline sits 6px above the top of the line so label clears the line
+        const text = document.createElementNS(NS, 'text');
+        text.setAttribute('x', x1);
+        text.setAttribute('y', y1 - 6);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'auto');
+        text.setAttribute('font-size', '12');
+        text.setAttribute('font-family', 'sans-serif');
+        text.setAttribute('fill', 'white');
+        text.setAttribute('font-weight', '500');
+        text.textContent = lm.label;
+
+        labelG.appendChild(bg);
+        labelG.appendChild(text);
+        svg.appendChild(labelG);
+        labels.push({ g: labelG, bg, text, id: lm.id });
+      });
+
+      requestAnimationFrame(sizeLabels);
+    }
+
+    function sizeLabels() {
+      labels.forEach(lb => {
+        try {
+          const bb = lb.text.getBBox();
+          const pad = 5;
+          lb.bg.setAttribute('x',      bb.x - pad);
+          lb.bg.setAttribute('y',      bb.y - pad);
+          lb.bg.setAttribute('width',  bb.width  + pad * 2);
+          lb.bg.setAttribute('height', bb.height + pad * 2);
+        } catch(e) {}
+      });
+    }
+
+    function setActive(id) {
+      if (activeId === id) return;
+      activeId = id;
+      lines.forEach(({ line, id: lid, hidden }) => {
+        const isActive = lid === id;
+        const strokeColor = isActive ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.8)';
+        line.setAttribute('stroke', strokeColor);
+        line.setAttribute('stroke-width', isActive ? '2.5' : '1.5');
+        if (hidden) {
+          line.setAttribute('marker-end', isActive ? 'url(#arrow-light)' : 'url(#arrow-dark)');
+        } else {
+          const dot = svg.querySelector(`circle[data-lid="${lid}"]`);
+          if (dot) dot.setAttribute('fill', strokeColor);
+        }
+      });
+    }
+
+    function getPos(e) {
+      const rect = svg.getBoundingClientRect();
+      const src  = e.touches ? e.touches[0] : e;
+      return {
+        x: (src.clientX - rect.left) * (svgW / rect.width),
+        y: (src.clientY - rect.top)  * (svgH / rect.height),
+      };
+    }
+
+    function distToSegment(px, py, x1, y1, x2, y2) {
+      const dx = x2-x1, dy = y2-y1, lenSq = dx*dx + dy*dy;
+      if (lenSq === 0) return Math.hypot(px-x1, py-y1);
+      const t = Math.max(0, Math.min(1, ((px-x1)*dx + (py-y1)*dy) / lenSq));
+      return Math.hypot(px - (x1 + t*dx), py - (y1 + t*dy));
+    }
+
+    function findClosest(mx, my) {
+      let best = -1, bestDist = Infinity;
+      landmarks.forEach(lm => {
+        const x1 = sp(lm._x1f, svgW), y1 = sp(lm._y1f, svgH);
+        const x2 = sp(lm._x2f, svgW), y2 = sp(lm._y2f, svgH);
+        const d  = distToSegment(mx, my, x1, y1, x2, y2);
+        if (d < HOVER_DIST && d < bestDist) { bestDist = d; best = lm.id; }
+      });
+      return best;
+    }
+
+    function onMove(e) {
+      e.preventDefault();
+      const { x, y } = getPos(e);
+      setActive(findClosest(x, y));
+    }
+
+    function onTap(e) {
+      e.preventDefault();
+      const { x, y } = getPos(e);
+      const id = findClosest(x, y);
+      if (id === -1) return;
+      shownLabels.has(id) ? shownLabels.delete(id) : shownLabels.add(id);
+      const lb = labels.find(l => l.id === id);
+      if (lb) {
+        lb.g.style.display = shownLabels.has(id) ? 'block' : 'none';
+        requestAnimationFrame(sizeLabels);
+      }
+    }
+
+    function getRealSize() {
+      const rect = svg.getBoundingClientRect();
+      svgW = rect.width  || W;
+      svgH = rect.height || H;
+    }
+
+    svg.addEventListener('mousemove',  onMove);
+    svg.addEventListener('mouseleave', () => setActive(-1));
+    svg.addEventListener('click',      onTap);
+    svg.addEventListener('touchmove',  onMove, { passive: false });
+    svg.addEventListener('touchstart', onTap,  { passive: false });
+    window.addEventListener('resize',  () => { getRealSize(); shownLabels = new Set(); buildSVG(); });
+
+    getRealSize();
+    buildSVG();
+  </script>
+</body>
+</html>
