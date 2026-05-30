@@ -12,12 +12,81 @@
     #wrapper { position: relative; display: inline-block; width: 100%; user-select: none; }
     #landscape { display: block; width: 100%; height: auto; }
     #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
+
+    /* ── Modal overlay ───────────────────────────────────────────────────── */
+    #modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 1000;
+      /* Backdrop fades in; the image inside does the zoom */
+      animation: backdropIn 0.25s ease forwards;
+    }
+    #modal-backdrop.visible { display: flex; align-items: center; justify-content: center; }
+
+    @keyframes backdropIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    #modal-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #modal-img {
+      display: block;
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 4px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+      /* Scale-only zoom animation, origin set dynamically via JS */
+      transform-origin: center center;
+      animation: zoomIn 0.35s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.04); opacity: 0.6; }
+      to   { transform: scale(1);    opacity: 1;   }
+    }
+
+    #modal-caption {
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      letter-spacing: 0.02em;
+    }
+
+    #modal-close {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      font-size: 16px;
+      line-height: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    #modal-close:hover { background: rgba(255,255,255,0.3); }
   </style>
 </head>
 <body>
 
   <h1>Learn Your Territory</h1>
-  <p id="instructions">Hover near a line or landmark to highlight it. Click to toggle the label.</p>
+  <p id="instructions">Hover near a line or landmark to highlight it. Click to toggle the label. Double-click to view a closeup.</p>
 
   <div id="wrapper">
     <!--
@@ -28,6 +97,15 @@
     -->
     <img id="landscape" src="images/DelilahAfternoonWest.jpg" alt="Landscape">
     <svg id="overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+  </div>
+
+  <!-- ── Closeup modal ─────────────────────────────────────────────────── -->
+  <div id="modal-backdrop" role="dialog" aria-modal="true" aria-label="Landmark closeup">
+    <div id="modal-content">
+      <button id="modal-close" aria-label="Close">✕</button>
+      <img id="modal-img" src="" alt="">
+      <div id="modal-caption"></div>
+    </div>
   </div>
 
   <script>
@@ -42,20 +120,23 @@
     // Landmark data. All coordinates are in native image pixels, exactly as
     // reported by your image editor (Photoshop, GIMP, Preview, etc.).
     //
-    // x1, y1 — top end of the line (undecorated, label appears above here)
-    // x2, y2 — bottom end of the line (dot, points to the land feature)
-    // label  — name displayed when the user clicks the line
-    // hidden — true  → land feature is not directly visible (canyon, valley, etc.)
-    //                   tip is drawn as an arrowhead
-    //          false → land feature is visible; tip is drawn as a filled dot
+    // x1, y1  — top end of the line (undecorated, label appears above here)
+    // x2, y2  — bottom end of the line (dot or arrow, points to the land feature)
+    // label   — name displayed when the user clicks the line
+    // hidden  — true  → land feature is not directly visible (canyon, valley, etc.)
+    //                    tip is drawn as an arrowhead
+    //           false → land feature is visible; tip is drawn as a filled dot
+    // closeup — path to a closeup photo of this landmark (relative to this HTML file)
+    //           double-click the line to open the closeup in a modal overlay
+    //           set to null (no quotes) to disable the closeup for a landmark
     const landmarks = [
-      { id:1, x1:230, y1: 60, x2:230,  y2: 375, label: "Dude Ridge/SQF", hidden: false},
-      { id:2, x1:525, y1:60, x2:525, y2:390, label: "Squaw Valley (area)/FKU", hidden: false},
-      { id:3,  x1: 862, y1: 60, x2: 862,  y2: 286, label: "Bald Mt/FKU", hidden: false},
-      { id:4, x1:1200, y1: 60, x2:1200,  y2: 190, label: "Bear Mt/FKU", hidden: false},
-      { id:5, x1:1293, y1:60, x2:1293, y2:324, label: "Elwood Rd/FKU", hidden: true},
-      { id:6, x1:1660, y1:60, x2:1660, y2:240, label: "Dalton Mt", hidden: false},
-      //{ id:, x1:, y1:, x2:, y2:, label: ""  },
+      { id:1, x1:230,  y1:60, x2:230,  y2:375, label: "Dude Ridge/SQF",          hidden: false, closeup: "images/closeups/DudeRidge.png"    },
+      { id:2, x1:525,  y1:60, x2:525,  y2:390, label: "Squaw Valley (area)/FKU", hidden: false, closeup: "images/closeups/SquawValley.png"   },
+      { id:3, x1:862,  y1:60, x2:862,  y2:286, label: "Bald Mt/FKU",             hidden: false, closeup: "images/closeups/BaldMt.png"        },
+      { id:4, x1:1200, y1:60, x2:1200, y2:190, label: "Bear Mt/FKU",             hidden: false, closeup: "images/closeups/bear_mtn_fresno.jpg"        },
+      { id:5, x1:1293, y1:60, x2:1293, y2:324, label: "Elwood Rd/FKU",           hidden: true,  closeup: "images/closeups/Elwood.png"      },
+      { id:6, x1:1660, y1:60, x2:1660, y2:240, label: "Dalton Mt",               hidden: false, closeup: "images/closeups/Dalton.png"      },
+      //{ id:, x1:, y1:, x2:, y2:, label: "", hidden: false, closeup: null },
     ];
 
     // Pixel distance from the pointer within which a line is considered hovered
@@ -267,12 +348,95 @@
       svgH = rect.height || H;
     }
 
-    svg.addEventListener('mousemove',  onMove);
-    svg.addEventListener('mouseleave', () => setActive(-1));
-    svg.addEventListener('click',      onTap);
-    svg.addEventListener('touchmove',  onMove, { passive: false });
-    svg.addEventListener('touchstart', onTap,  { passive: false });
-    window.addEventListener('resize',  () => { getRealSize(); shownLabels = new Set(); buildSVG(); });
+    // -------------------------------------------------------------------------
+    // Modal closeup — open / close
+    // -------------------------------------------------------------------------
+    const backdrop  = document.getElementById('modal-backdrop');
+    const modalImg  = document.getElementById('modal-img');
+    const modalCap  = document.getElementById('modal-caption');
+    const modalClose= document.getElementById('modal-close');
+
+    function openModal(lm, originX, originY) {
+      if (!lm.closeup) return;
+
+      // Convert the landmark's screen position to a percentage of the viewport
+      // so transform-origin zooms outward from exactly that point.
+      const xPct = (originX / window.innerWidth  * 100).toFixed(2) + '%';
+      const yPct = (originY / window.innerHeight * 100).toFixed(2) + '%';
+      modalImg.style.transformOrigin = `${xPct} ${yPct}`;
+
+      modalImg.src = lm.closeup;
+      modalImg.alt = lm.label;
+      modalCap.textContent = lm.label;
+
+      // Re-trigger the CSS animation by removing and re-adding the element's
+      // animation (clone trick keeps it simple without a class toggle).
+      modalImg.style.animation = 'none';
+      // Force reflow so removing the animation takes effect before restoring it
+      void modalImg.offsetWidth;
+      modalImg.style.animation = '';
+
+      backdrop.classList.add('visible');
+      document.addEventListener('keydown', onKeyDown);
+    }
+
+    function closeModal() {
+      backdrop.classList.remove('visible');
+      document.removeEventListener('keydown', onKeyDown);
+      // Clear src after transition so the old image doesn't flash on next open
+      setTimeout(() => { modalImg.src = ''; }, 300);
+    }
+
+    function onKeyDown(e) { if (e.key === 'Escape') closeModal(); }
+
+    modalClose.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
+
+    // -------------------------------------------------------------------------
+    // Double-click (desktop) — open closeup modal
+    // -------------------------------------------------------------------------
+    function onDblClick(e) {
+      const { x, y } = getPos(e);
+      const id = findClosest(x, y);
+      if (id === -1) return;
+      const lm = landmarks.find(l => l.id === id);
+      if (lm) openModal(lm, e.clientX, e.clientY);
+    }
+
+    // -------------------------------------------------------------------------
+    // Double-tap (touch) — detected manually via timing
+    // -------------------------------------------------------------------------
+    let lastTap = 0;
+    let lastTapId = -1;
+
+    function onTouchStart(e) {
+      const now = Date.now();
+      const { x, y } = getPos(e);
+      const id = findClosest(x, y);
+
+      if (now - lastTap < 350 && id !== -1 && id === lastTapId) {
+        // Double-tap detected on the same landmark
+        e.preventDefault();
+        const touch = e.touches[0] || e.changedTouches[0];
+        const lm = landmarks.find(l => l.id === id);
+        if (lm) openModal(lm, touch.clientX, touch.clientY);
+        lastTap = 0; lastTapId = -1;
+        return;
+      }
+
+      lastTap   = now;
+      lastTapId = id;
+      // Fall through to the existing onTap handler for single-tap label toggle
+      onTap(e);
+    }
+
+    svg.addEventListener('mousemove',   onMove);
+    svg.addEventListener('mouseleave',  () => setActive(-1));
+    svg.addEventListener('click',       onTap);
+    svg.addEventListener('dblclick',    onDblClick);
+    svg.addEventListener('touchmove',   onMove,        { passive: false });
+    svg.addEventListener('touchstart',  onTouchStart,  { passive: false });
+    window.addEventListener('resize',   () => { getRealSize(); shownLabels = new Set(); buildSVG(); });
 
     // Build the SVG once the photo has loaded and the browser knows its
     // rendered dimensions. If the image is already cached and 'load' has
