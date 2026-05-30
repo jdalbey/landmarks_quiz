@@ -56,14 +56,6 @@
       to   { transform: scale(1);    opacity: 1;   }
     }
 
-    #modal-caption {
-      color: #fff;
-      font-size: 14px;
-      font-weight: 500;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-      letter-spacing: 0.02em;
-    }
-
     #modal-close {
       position: absolute;
       top: -14px;
@@ -79,6 +71,7 @@
       text-align: center;
       cursor: pointer;
       transition: background 0.15s;
+      z-index: 1002;
     }
     #modal-close:hover { background: rgba(255,255,255,0.3); }
   </style>
@@ -86,7 +79,7 @@
 <body>
 
   <h1>Learn Your Territory</h1>
-  <p id="instructions">Hover near a line or landmark to highlight it. Click to toggle the label. Double-click to view a closeup.</p>
+  <p id="instructions">Hover near a line to highlight it — click to toggle the label. Hover over the circle or arrowhead tip to highlight it — click to view a closeup photo.</p>
 
   <div id="wrapper">
     <!--
@@ -104,7 +97,6 @@
     <div id="modal-content">
       <button id="modal-close" aria-label="Close">✕</button>
       <img id="modal-img" src="" alt="">
-      <div id="modal-caption"></div>
     </div>
   </div>
 
@@ -127,15 +119,15 @@
     //                    tip is drawn as an arrowhead
     //           false → land feature is visible; tip is drawn as a filled dot
     // closeup — path to a closeup photo of this landmark (relative to this HTML file)
-    //           double-click the line to open the closeup in a modal overlay
+    //           click the circle or arrowhead tip to open the closeup in a modal overlay
     //           set to null (no quotes) to disable the closeup for a landmark
     const landmarks = [
       { id:1, x1:230,  y1:60, x2:230,  y2:375, label: "Dude Ridge/SQF",          hidden: false, closeup: "images/closeups/DudeRidge.png"    },
       { id:2, x1:525,  y1:60, x2:525,  y2:390, label: "Squaw Valley (area)/FKU", hidden: false, closeup: "images/closeups/SquawValley.png"   },
       { id:3, x1:862,  y1:60, x2:862,  y2:286, label: "Bald Mt/FKU",             hidden: false, closeup: "images/closeups/BaldMt.png"        },
-      { id:4, x1:1200, y1:60, x2:1200, y2:190, label: "Bear Mt/FKU",             hidden: false, closeup: "images/closeups/bear_mtn_fresno.jpg"        },
+      { id:4, x1:1200, y1:60, x2:1200, y2:200, label: "Bear Mt/FKU",             hidden: false, closeup: "images/closeups/bear_mtn_fresno.jpg"},
       { id:5, x1:1293, y1:60, x2:1293, y2:324, label: "Elwood Rd/FKU",           hidden: true,  closeup: "images/closeups/Elwood.png"      },
-      { id:6, x1:1660, y1:60, x2:1660, y2:240, label: "Dalton Mt",               hidden: false, closeup: "images/closeups/Dalton.png"      },
+      { id:6, x1:1660, y1:60, x2:1660, y2:245, label: "Dalton Mt",               hidden: false, closeup: "images/closeups/Dalton.png"      },
       //{ id:, x1:, y1:, x2:, y2:, label: "", hidden: false, closeup: null },
     ];
 
@@ -160,16 +152,21 @@
     const NS = 'http://www.w3.org/2000/svg';
 
     let svgW = W, svgH = H;
-    let lines = [], labels = [];
-    let activeId = -1;
+    let lines = [], labels = [], tips = [];
+    let activeLineId = -1;   // which line body is currently hovered
+    let activeTipId  = -1;   // which tip (circle/arrowhead) is currently hovered
     let shownLabels = new Set();
+
+    // Radius of the open circle tip and the invisible hit-target for arrowheads
+    const TIP_R      = 9;   // visible open circle radius (px in SVG space)
+    const TIP_HIT_R  = 14;  // invisible hit-target radius
 
     function sp(frac, dim) { return frac * dim; }
 
     function buildSVG() {
       svg.innerHTML = '';
       svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
-      lines = []; labels = [];
+      lines = []; labels = []; tips = [];
 
       // Arrowhead marker definitions — one for default (black), one for hover (white)
       const defs = document.createElementNS(NS, 'defs');
@@ -177,13 +174,14 @@
       function makeMarker(id, color) {
         const marker = document.createElementNS(NS, 'marker');
         marker.setAttribute('id', id);
-        marker.setAttribute('markerWidth',  '8');
-        marker.setAttribute('markerHeight', '6');
-        marker.setAttribute('refX',  '8');
-        marker.setAttribute('refY',  '3');
+        marker.setAttribute('markerUnits', 'userSpaceOnUse');
+        marker.setAttribute('markerWidth',  '12');
+        marker.setAttribute('markerHeight', '9');
+        marker.setAttribute('refX',  '0');
+        marker.setAttribute('refY',  '4.5');
         marker.setAttribute('orient', 'auto');
         const path = document.createElementNS(NS, 'path');
-        path.setAttribute('d', 'M0,0 L8,3 L0,6 Z');
+        path.setAttribute('d', 'M0,0 L12,4.5 L0,9 Z');
         path.setAttribute('fill', color);
         marker.appendChild(path);
         return marker;
@@ -197,22 +195,35 @@
         const x1 = sp(lm._x1f, svgW), y1 = sp(lm._y1f, svgH);
         const x2 = sp(lm._x2f, svgW), y2 = sp(lm._y2f, svgH);
 
-        // Invisible wide hit-target line for easy mouse/touch selection
+        // ── Invisible wide hit-target for the line body (excluding tip area) ──
+        // Shortened at the bottom so it doesn't overlap the tip hit-target.
+        const lineHitLen = Math.hypot(x2 - x1, y2 - y1);
+        const lineHitFrac = Math.max(0, (lineHitLen - TIP_HIT_R) / lineHitLen);
+        const lineHitX2 = x1 + (x2 - x1) * lineHitFrac;
+        const lineHitY2 = y1 + (y2 - y1) * lineHitFrac;
+
         const hitLine = document.createElementNS(NS, 'line');
         hitLine.setAttribute('x1', x1); hitLine.setAttribute('y1', y1);
-        hitLine.setAttribute('x2', x2); hitLine.setAttribute('y2', y2);
+        hitLine.setAttribute('x2', lineHitX2); hitLine.setAttribute('y2', lineHitY2);
         hitLine.setAttribute('stroke', 'transparent');
         hitLine.setAttribute('stroke-width', '20');
         hitLine.style.cursor = 'pointer';
         hitLine.dataset.lid = lm.id;
+        hitLine.dataset.role = 'line';
         svg.appendChild(hitLine);
 
-        // Visible annotation line.
-        // For arrow landmarks, stop the line a few px short so the arrowhead
-        // sits flush at x2,y2 rather than overlapping it.
-        const ARROW_INSET = 8;
-        const lineX2 = lm.hidden ? x2 - (x2 === x1 ? 0 : ARROW_INSET) : x2;
-        const lineY2 = lm.hidden ? y2 - (y2  > y1  ? ARROW_INSET : -ARROW_INSET) : y2;
+        // ── Visible annotation line ──
+        // Inset the far endpoint so the line stops cleanly at the tip symbol:
+        //   • visible landmark → stop at the circle circumference (inset by TIP_R)
+        //   • hidden landmark  → line runs to x2,y2; arrowhead base is anchored
+        //                        there via refX="0" on the SVG marker
+        const segLen = Math.hypot(x2 - x1, y2 - y1);
+        const ux = segLen > 0 ? (x2 - x1) / segLen : 0;
+        const uy = segLen > 0 ? (y2 - y1) / segLen : 0;
+
+        const inset = lm.hidden ? 0 : TIP_R;
+        const lineX2 = x2 - ux * inset;
+        const lineY2 = y2 - uy * inset;
 
         const line = document.createElementNS(NS, 'line');
         line.setAttribute('x1', x1); line.setAttribute('y1', y1);
@@ -224,19 +235,35 @@
         svg.appendChild(line);
         lines.push({ line, id: lm.id, hidden: lm.hidden });
 
-        // Tip symbol: dot for visible landmarks, arrowhead for hidden ones.
-        // (Arrow landmarks get their tip from the SVG marker on the line.)
-        if (!lm.hidden) {
-          const dot = document.createElementNS(NS, 'circle');
-          dot.setAttribute('cx', x2); dot.setAttribute('cy', y2);
-          dot.setAttribute('r', '3');
-          dot.setAttribute('fill', 'rgba(0,0,0,0.8)');
-          dot.dataset.lid = lm.id;
-          dot.style.pointerEvents = 'none';
-          svg.appendChild(dot);
-        }
+        // ── Tip: open circle (visible) or arrowhead (hidden) ──
+        // Both get an invisible circular hit-target centred on x2,y2.
+        const hitCircle = document.createElementNS(NS, 'circle');
+        hitCircle.setAttribute('cx', x2); hitCircle.setAttribute('cy', y2);
+        hitCircle.setAttribute('r', TIP_HIT_R);
+        hitCircle.setAttribute('fill', 'transparent');
+        hitCircle.style.cursor = 'pointer';
+        hitCircle.dataset.lid  = lm.id;
+        hitCircle.dataset.role = 'tip';
+        svg.appendChild(hitCircle);
 
-        // Label group (hidden until clicked)
+        if (!lm.hidden) {
+          // Open circle tip for visible landmarks
+          const circle = document.createElementNS(NS, 'circle');
+          circle.setAttribute('cx', x2); circle.setAttribute('cy', y2);
+          circle.setAttribute('r',  TIP_R);
+          circle.setAttribute('fill',         'none');
+          circle.setAttribute('stroke',       'rgba(0,0,0,0.8)');
+          circle.setAttribute('stroke-width', '1.5');
+          circle.dataset.tip = lm.id;
+          circle.style.pointerEvents = 'none';
+          svg.appendChild(circle);
+        }
+        // (Arrow landmarks show their tip via the SVG marker on the line;
+        //  the hit-target circle above handles the click area.)
+
+        tips.push({ id: lm.id, x: x2, y: y2, hidden: lm.hidden });
+
+        // ── Label group (hidden until line is clicked) ──
         const labelG = document.createElementNS(NS, 'g');
         labelG.style.pointerEvents = 'none';
         labelG.style.display = shownLabels.has(lm.id) ? 'block' : 'none';
@@ -245,7 +272,6 @@
         bg.setAttribute('rx', '3');
         bg.setAttribute('fill', 'rgba(0,0,0,0.65)');
 
-        // Text baseline sits 6px above the top of the line so label clears the line
         const text = document.createElementNS(NS, 'text');
         text.setAttribute('x', x1);
         text.setAttribute('y', y1 - 6);
@@ -279,19 +305,41 @@
       });
     }
 
-    function setActive(id) {
-      if (activeId === id) return;
-      activeId = id;
+    // ── Tip hover: highlight the circle/arrowhead, leave line alone ──────────
+    function setTipActive(id) {
+      if (activeTipId === id) return;
+      activeTipId = id;
+      tips.forEach(tip => {
+        const isActive = tip.id === id;
+        if (!tip.hidden) {
+          const circle = svg.querySelector(`circle[data-tip="${tip.id}"]`);
+          if (circle) {
+            circle.setAttribute('stroke', isActive ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.8)');
+            circle.setAttribute('stroke-width', isActive ? '2.5' : '1.5');
+          }
+        } else {
+          // For arrowhead tips, swap the marker colour on the line
+          const entry = lines.find(l => l.id === tip.id);
+          if (entry) {
+            entry.line.setAttribute('marker-end',
+              isActive ? 'url(#arrow-light)' : 'url(#arrow-dark)');
+          }
+        }
+      });
+    }
+
+    // ── Line hover: highlight the line, leave tip alone ──────────────────────
+    function setLineActive(id) {
+      if (activeLineId === id) return;
+      activeLineId = id;
       lines.forEach(({ line, id: lid, hidden }) => {
         const isActive = lid === id;
         const strokeColor = isActive ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.8)';
         line.setAttribute('stroke', strokeColor);
         line.setAttribute('stroke-width', isActive ? '2.5' : '1.5');
-        if (hidden) {
-          line.setAttribute('marker-end', isActive ? 'url(#arrow-light)' : 'url(#arrow-dark)');
-        } else {
-          const dot = svg.querySelector(`circle[data-lid="${lid}"]`);
-          if (dot) dot.setAttribute('fill', strokeColor);
+        // For arrow lines don't touch the marker here — tip hover owns that
+        if (!hidden) {
+          // Leave the circle stroke alone — tip hover owns it
         }
       });
     }
@@ -312,33 +360,67 @@
       return Math.hypot(px - (x1 + t*dx), py - (y1 + t*dy));
     }
 
-    function findClosest(mx, my) {
-      let best = -1, bestDist = Infinity;
+    // Returns { lineId, tipId } — whichever targets the pointer is nearest
+    function findTargets(mx, my) {
+      let bestLine = -1, bestLineDist = Infinity;
+      let bestTip  = -1, bestTipDist  = Infinity;
+
       landmarks.forEach(lm => {
         const x1 = sp(lm._x1f, svgW), y1 = sp(lm._y1f, svgH);
         const x2 = sp(lm._x2f, svgW), y2 = sp(lm._y2f, svgH);
-        const d  = distToSegment(mx, my, x1, y1, x2, y2);
-        if (d < HOVER_DIST && d < bestDist) { bestDist = d; best = lm.id; }
+
+        // Tip proximity (circle around x2,y2)
+        const tipDist = Math.hypot(mx - x2, my - y2);
+        if (tipDist <= TIP_HIT_R && tipDist < bestTipDist) {
+          bestTipDist = tipDist; bestTip = lm.id;
+        }
+
+        // Line body proximity (only if not inside tip zone)
+        if (tipDist > TIP_HIT_R) {
+          const d = distToSegment(mx, my, x1, y1, x2, y2);
+          if (d < HOVER_DIST && d < bestLineDist) {
+            bestLineDist = d; bestLine = lm.id;
+          }
+        }
       });
-      return best;
+
+      return { lineId: bestLine, tipId: bestTip };
     }
 
     function onMove(e) {
       e.preventDefault();
       const { x, y } = getPos(e);
-      setActive(findClosest(x, y));
+      const { lineId, tipId } = findTargets(x, y);
+      setLineActive(lineId);
+      setTipActive(tipId);
     }
 
-    function onTap(e) {
-      e.preventDefault();
-      const { x, y } = getPos(e);
-      const id = findClosest(x, y);
+    // Click on line body → toggle label
+    function onLineClick(id) {
       if (id === -1) return;
       shownLabels.has(id) ? shownLabels.delete(id) : shownLabels.add(id);
       const lb = labels.find(l => l.id === id);
       if (lb) {
         lb.g.style.display = shownLabels.has(id) ? 'block' : 'none';
         requestAnimationFrame(sizeLabels);
+      }
+    }
+
+    // Click on tip → open closeup modal
+    function onTipClick(id, clientX, clientY) {
+      if (id === -1) return;
+      const lm = landmarks.find(l => l.id === id);
+      if (lm) openModal(lm, clientX, clientY);
+    }
+
+    function onClick(e) {
+      e.preventDefault();
+      const { x, y } = getPos(e);
+      const { lineId, tipId } = findTargets(x, y);
+      if (tipId !== -1) {
+        onTipClick(tipId, e.clientX, e.clientY);
+      } else {
+        onLineClick(lineId);
       }
     }
 
@@ -351,23 +433,21 @@
     // -------------------------------------------------------------------------
     // Modal closeup — open / close
     // -------------------------------------------------------------------------
-    const backdrop  = document.getElementById('modal-backdrop');
-    const modalImg  = document.getElementById('modal-img');
-    const modalCap  = document.getElementById('modal-caption');
-    const modalClose= document.getElementById('modal-close');
+    const backdrop   = document.getElementById('modal-backdrop');
+    const modalImg   = document.getElementById('modal-img');
+    const modalClose = document.getElementById('modal-close');
 
-    function openModal(lm, originX, originY) {
+    function openModal(lm, clientX, clientY) {
       if (!lm.closeup) return;
 
-      // Convert the landmark's screen position to a percentage of the viewport
-      // so transform-origin zooms outward from exactly that point.
-      const xPct = (originX / window.innerWidth  * 100).toFixed(2) + '%';
-      const yPct = (originY / window.innerHeight * 100).toFixed(2) + '%';
+      // Convert the tip's screen position to a percentage of the viewport
+      // so the zoom animation originates from the landmark point.
+      const xPct = (clientX / window.innerWidth  * 100).toFixed(2) + '%';
+      const yPct = (clientY / window.innerHeight * 100).toFixed(2) + '%';
       modalImg.style.transformOrigin = `${xPct} ${yPct}`;
 
       modalImg.src = lm.closeup;
       modalImg.alt = lm.label;
-      modalCap.textContent = lm.label;
 
       // Re-trigger the CSS animation by removing and re-adding the element's
       // animation (clone trick keeps it simple without a class toggle).
@@ -392,51 +472,12 @@
     modalClose.addEventListener('click', closeModal);
     backdrop.addEventListener('click', e => { if (e.target === backdrop) closeModal(); });
 
-    // -------------------------------------------------------------------------
-    // Double-click (desktop) — open closeup modal
-    // -------------------------------------------------------------------------
-    function onDblClick(e) {
-      const { x, y } = getPos(e);
-      const id = findClosest(x, y);
-      if (id === -1) return;
-      const lm = landmarks.find(l => l.id === id);
-      if (lm) openModal(lm, e.clientX, e.clientY);
-    }
-
-    // -------------------------------------------------------------------------
-    // Double-tap (touch) — detected manually via timing
-    // -------------------------------------------------------------------------
-    let lastTap = 0;
-    let lastTapId = -1;
-
-    function onTouchStart(e) {
-      const now = Date.now();
-      const { x, y } = getPos(e);
-      const id = findClosest(x, y);
-
-      if (now - lastTap < 350 && id !== -1 && id === lastTapId) {
-        // Double-tap detected on the same landmark
-        e.preventDefault();
-        const touch = e.touches[0] || e.changedTouches[0];
-        const lm = landmarks.find(l => l.id === id);
-        if (lm) openModal(lm, touch.clientX, touch.clientY);
-        lastTap = 0; lastTapId = -1;
-        return;
-      }
-
-      lastTap   = now;
-      lastTapId = id;
-      // Fall through to the existing onTap handler for single-tap label toggle
-      onTap(e);
-    }
-
-    svg.addEventListener('mousemove',   onMove);
-    svg.addEventListener('mouseleave',  () => setActive(-1));
-    svg.addEventListener('click',       onTap);
-    svg.addEventListener('dblclick',    onDblClick);
-    svg.addEventListener('touchmove',   onMove,        { passive: false });
-    svg.addEventListener('touchstart',  onTouchStart,  { passive: false });
-    window.addEventListener('resize',   () => { getRealSize(); shownLabels = new Set(); buildSVG(); });
+    svg.addEventListener('mousemove',  onMove);
+    svg.addEventListener('mouseleave', () => { setLineActive(-1); setTipActive(-1); });
+    svg.addEventListener('click',      onClick);
+    svg.addEventListener('touchmove',  onMove,   { passive: false });
+    svg.addEventListener('touchstart', onClick,  { passive: false });
+    window.addEventListener('resize',  () => { getRealSize(); shownLabels = new Set(); buildSVG(); });
 
     // Build the SVG once the photo has loaded and the browser knows its
     // rendered dimensions. If the image is already cached and 'load' has
