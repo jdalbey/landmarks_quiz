@@ -176,6 +176,17 @@ L.polyline(
     }
 ).addTo(map);
 
+const forests = L.esri.featureLayer({
+  url: "https://apps.fs.usda.gov/arcx/rest/services/EDW/EDW_ForestSystemBoundaries_01/MapServer/0",
+  style: function () {
+    return {
+      color: "green",
+      weight: 2,
+      fillOpacity: 0.15
+    };
+  }
+});
+
 //Public Land Survey System (PLSS) for Legal grid
 const plssLayer = L.esri.dynamicMapLayer({
   url: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer',
@@ -188,7 +199,8 @@ var baseMaps = {
 };
 
 var overlayMaps = {
-  "PLSS (legal)": plssLayer
+  "PLSS (legal)": plssLayer,
+  "USFS": forests
 };
 
 L.control.layers(baseMaps, overlayMaps).addTo(map);
