@@ -69,7 +69,7 @@ function destinationPoint(lat, lon, bearingDeg, distanceMeters) {
   const centerLat = 36.80454;
   const centerLng = -119.11755;
   const center = [centerLat, centerLng];
-  const distanceMiles = 15
+  const distanceMiles = 20
   const distanceMeters = distanceMiles * 1609.344;
   const params  = new URLSearchParams(window.location.search);
   const bearing = parseFloat(params.get('bearing')) ?? 266;  // degrees (from firefinder, or default)

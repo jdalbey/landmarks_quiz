@@ -74,7 +74,7 @@
 
   #readout {
     font-family: 'Courier New', Courier, monospace;
-    font-size: 1.65em;
+    font-size: .65em;
     color: #f0e07a;
     letter-spacing: 0.04em;
   }
@@ -90,7 +90,7 @@
 <body>
 
 <h1>Osborne Firefinder Simulator — Mockup</h1>
-<div id="subtitle">Photograph: DelilahWest &nbsp;|&nbsp; Azimuth range: 262° – 287°</div>
+
 
 <div id="firefinder">
   <div id="photo-wrapper">
@@ -260,12 +260,6 @@ function drawStrip() {
   ctx.lineTo(PW, bpTop + 0.5);
   ctx.stroke();
 
-  // "BASE PLATE" label (left edge)
-  ctx.font = '9px Georgia';
-  ctx.fillStyle = '#5a5c5e';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'bottom';
-  ctx.fillText('BASE PLATE', 4, bpTop + BH - 2);
 
   // Tick marks: degree and half-degree only; every 5th degree taller; multiples of 10 labeled
   ctx.strokeStyle = '#282828';
@@ -315,12 +309,6 @@ function drawStrip() {
   ctx.fillStyle = vGrad;
   ctx.fillRect(vernierX - vW, 1, vW, VH - 2);
 
-  // "VERNIER" label — kept within canvas bounds when plate is truncated
-  ctx.font = '9px Georgia';
-  ctx.fillStyle = '#3a1800';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'top';
-  ctx.fillText('VERNIER', Math.max(2, vernierX - vW + 2), 2);
 
   // Vernier tick marks: 0 at vernierX, marks 1–30 extend LEFT; numbers increase right-to-left
   ctx.strokeStyle = '#3a1800';
@@ -376,7 +364,7 @@ function updateReadout() {
 document.addEventListener('keydown', e => {
   if (e.key === 'm' || e.key === 'M') {
     if (!sightVisible) return;
-    window.open(`mapview.html?bearing=${currentAz().toFixed(2)}`, '_blank');
+    window.open(`mapview.html?bearing=${currentAz().toFixed(2)}`, 'mapview');
     return;
   }
 
