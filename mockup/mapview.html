@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delilah Region Map</title>
+
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+
+  #map {
+    width: 100%;
+    height: 100vh;
+  }
+
+  .info {
+    background: rgba(255,255,255,0.9);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Compute the destination point (end point of line)
+// lat, lon is origin point of line 
+// bearingDeg is compass bearing to destination
+// distanceMeters is desired length of line
+function destinationPoint(lat, lon, bearingDeg, distanceMeters) {
+    const R = 6371000; // Earth radius in meters
+
+    const phi1 = lat * Math.PI / 180;
+    const lambda1 = lon * Math.PI / 180;
+    const theta = bearingDeg * Math.PI / 180;
+    const delta = distanceMeters / R;
+
+    const phi2 = Math.asin(
+        Math.sin(phi1) * Math.cos(delta) +
+        Math.cos(phi1) * Math.sin(delta) * Math.cos(theta)
+    );
+
+    const lambda2 = lambda1 + Math.atan2(
+        Math.sin(theta) * Math.sin(delta) * Math.cos(phi1),
+        Math.cos(delta) - Math.sin(phi1) * Math.sin(phi2)
+    );
+
+    return [
+        phi2 * 180 / Math.PI,
+        lambda2 * 180 / Math.PI
+    ];
+}
+
+  // Constants describing the desired line
+  const centerLat = 36.80454;
+  const centerLng = -119.11755;
+  const center = [centerLat, centerLng];
+  const distanceMiles = 15
+  const distanceMeters = distanceMiles * 1609.344;
+  const params  = new URLSearchParams(window.location.search);
+  const bearing = parseFloat(params.get('bearing')) ?? 266;  // degrees (from firefinder, or default)
+  // get end point      
+  const endPoint = destinationPoint(
+        center[0],
+        center[1],
+        bearing,
+        distanceMeters
+  );
+
+  console.log(endPoint);
+
+  // Create map 
+  //    Typical zoom values:
+  //    5 → state/large region
+  //    8 → county-sized area
+  //    10 → city and surroundings
+  //    12 → town
+  //    14 → neighborhood
+  const map = L.map('map').setView([centerLat, centerLng], 12);
+
+  // OpenTopoMap layer
+  L.tileLayer(
+    'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    {
+      maxZoom: 17,
+      attribution:
+        'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap'
+    }
+  ).addTo(map);
+
+// Draw the sight line
+const sightLine = L.polyline(
+  [center, endPoint],
+  {
+    color: 'blue',
+    weight: 3
+  }
+).addTo(map);
+
+// Add half-mile index marks
+//This draws a 500-foot tick mark every 0.5 mile on the right side of the line.
+
+const tickSpacingMiles = 0.5;
+const tickLengthFeet = 500;
+
+const tickLengthMeters = tickLengthFeet * 0.3048;
+
+// Right side of travel
+const tickBearing = bearing + 90;
+ticklengthToggle = false
+for (let mile = tickSpacingMiles; mile <= distanceMiles; mile += tickSpacingMiles) {
+
+    const pointOnLine = destinationPoint(
+        center[0],
+        center[1],
+        bearing,
+        mile * 1609.344
+    );
+
+    drawlength = tickLengthMeters
+    if (ticklengthToggle)
+        drawlength = tickLengthMeters * 2
+    ticklengthToggle = !ticklengthToggle
+
+    const tickEnd = destinationPoint(
+        pointOnLine[0],
+        pointOnLine[1],
+        tickBearing,
+        drawlength
+    );
+
+    L.polyline(
+        [pointOnLine, tickEnd],
+        {
+            color: 'black',
+            weight: 2
+        }
+    ).addTo(map);
+
+}
+
+// Draw a square around the origin point
+const halfSide = 75; // meters
+
+// Move north/south from center
+const north = destinationPoint(center[0], center[1], 0, halfSide);
+const south = destinationPoint(center[0], center[1], 180, halfSide);
+
+// Then move east/west from those points
+const nw = destinationPoint(north[0], north[1], 270, halfSide);
+const ne = destinationPoint(north[0], north[1], 90, halfSide);
+const se = destinationPoint(south[0], south[1], 90, halfSide);
+const sw = destinationPoint(south[0], south[1], 270, halfSide);
+
+L.polyline(
+    [nw, ne, se, sw, nw],
+    {
+        color: 'black',
+        weight: 2
+    }
+).addTo(map);
+
+</script>
+
+</body>
+</html>

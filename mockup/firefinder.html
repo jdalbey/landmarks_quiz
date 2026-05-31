@@ -100,7 +100,7 @@
   <canvas id="azimuth-canvas"></canvas>
   <div id="status-bar">
     <div id="readout">Az: — ° —′</div>
-    <div id="hint">O &ensp; toggle sight &nbsp;|&nbsp; ← / → &ensp; move 1′ &nbsp;|&nbsp; Shift + ← / → &ensp; move 1°</div>
+    <div id="hint">M &ensp; map view &nbsp;|&nbsp; O &ensp; toggle sight &nbsp;|&nbsp; ← / → &ensp; move 1′ &nbsp;|&nbsp; Shift + ← / → &ensp; move 1°</div>
   </div>
 </div>
 
@@ -374,6 +374,12 @@ function updateReadout() {
 
 // ── Keyboard ───────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
+  if (e.key === 'm' || e.key === 'M') {
+    if (!sightVisible) return;
+    window.open(`mapview.html?bearing=${currentAz().toFixed(2)}`, '_blank');
+    return;
+  }
+
   if (e.key === 'o' || e.key === 'O') {
     sightVisible = !sightVisible;
     if (sightVisible && !sightShownOnce) {
