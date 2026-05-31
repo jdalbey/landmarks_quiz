@@ -36,6 +36,7 @@
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/esri-leaflet"></script>
 <script>
 // Compute the destination point (end point of line)
 // lat, lon is origin point of line 
@@ -93,20 +94,21 @@ function destinationPoint(lat, lon, bearingDeg, distanceMeters) {
   const map = L.map('map').setView([centerLat, centerLng], 12);
 
   // OpenTopoMap layer
-  L.tileLayer(
+  const topoLayer = L.tileLayer(
     'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
     {
       maxZoom: 17,
       attribution:
         'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap'
     }
-  ).addTo(map);
+  );
+  topoLayer.addTo(map);
 
 // Draw the sight line
 const sightLine = L.polyline(
   [center, endPoint],
   {
-    color: 'blue',
+    color: 'red',
     weight: 3
   }
 ).addTo(map);
@@ -146,7 +148,7 @@ for (let mile = tickSpacingMiles; mile <= distanceMiles; mile += tickSpacingMile
     L.polyline(
         [pointOnLine, tickEnd],
         {
-            color: 'black',
+            color: 'red',
             weight: 2
         }
     ).addTo(map);
@@ -174,6 +176,22 @@ L.polyline(
     }
 ).addTo(map);
 
+//Public Land Survey System (PLSS) for Legal grid
+const plssLayer = L.esri.dynamicMapLayer({
+  url: 'https://gis.blm.gov/arcgis/rest/services/Cadastral/BLM_Natl_PLSS_CadNSDI/MapServer',
+  opacity: 0.7
+});
+let plssVisible = false;
+
+var baseMaps = {
+  "OpenTopoMap": topoLayer
+};
+
+var overlayMaps = {
+  "PLSS (legal)": plssLayer
+};
+
+L.control.layers(baseMaps, overlayMaps).addTo(map);
 </script>
 
 </body>
