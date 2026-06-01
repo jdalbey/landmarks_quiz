@@ -4,6 +4,39 @@
 <meta charset="UTF-8">
 <title>Training Screen Layout</title>
 <style>
+  /* ── Dark theme base ────────────────────────────────────────────── */
+  body {
+    background: #2b2b2b;
+    color: #c8a84a;
+    font-family: Verdana, sans-serif;
+  }
+
+  table { border-color: #4a4a4a; }
+  td    { border-color: #4a4a4a; }
+
+  button {
+    background: #3a3a3a;
+    color: #c8a84a;
+    border: 1px solid #c07800;
+    font-family: Verdana, sans-serif;
+    cursor: pointer;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  button:hover { background: #4a4a4a; }
+
+  select, input[type="text"], input[type="number"] {
+    background: #1e1e1e;
+    color: #c8a84a;
+    border: 1px solid #4a4a4a;
+    font-family: Verdana, sans-serif;
+  }
+
+  label { color: #c8a84a; }
+  h2    { color: #c8a84a; }
+
+  /* ── End dark theme base ─────────────────────────────────────────── */
+
   #help-backdrop {
     display: none;
     position: fixed; inset: 0;
@@ -14,7 +47,7 @@
   #help-backdrop.open { display: flex; }
 
   #help-modal {
-    background: white; border: 2px solid #444;
+    background: #222222; border: 2px solid #c07800;
     padding: 20px; max-width: 500px; width: 90%;
     max-height: 85vh; overflow-y: auto; position: relative;
   }
@@ -22,10 +55,64 @@
   #report-page {
     display: none;
     position: fixed; top: 5%; left: 10%; width: 80%; height: 90%;
-    overflow-y: auto; background: white; border: 2px solid #444;
-    padding: 15px; z-index: 999;
+    overflow-y: auto; background: #f5f0e8; border: 2px solid #c07800;
+    padding: 15px; z-index: 999; color: #2a2018;
   }
   #report-page.open { display: block; }
+
+  #report-page h2,
+  #report-page label { color: #2a2018; }
+
+  #report-page input[type="text"],
+  #report-page input[type="number"] {
+    background: #ffffff;
+    color: #2a2018;
+    border: 1px solid #9a8060;
+    border-radius: 4px;
+  }
+
+  /* ── Report form layout ───────────────────────────────────────── */
+  #report-page .form-section {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #d8cfc0;
+  }
+  #report-page .form-section:last-child { border-bottom: none; }
+
+  #report-page .field-label {
+    font-weight: bold;
+    color: #5a3010;
+    min-width: 160px;
+    flex-shrink: 0;
+    font-size: 0.9em;
+  }
+
+  #classification-feedback { flex-basis: 100%; padding-left: 176px; }
+
+  /* ── Smoke description panel ──────────────────────────────────── */
+  .smoke-panel {
+    border: 1px solid #9a8060;
+    border-radius: 6px;
+    background: #ede8dc;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+
+  .smoke-panel .panel-title {
+    font-weight: bold;
+    color: #5a3010;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  #report-page input[type="radio"],
+  #report-page input[type="checkbox"] { accent-color: #c07800; }
 
   /* ── Binoculars closeup modal ──────────────────────────────────── */
   #modal-backdrop {
@@ -272,46 +359,51 @@
         </div>
       </div>
 
-      <div class="form-section dimmable">
-        <span class="field-label">Volume</span>
-        <div class="check-group">
-          <label><input type="checkbox" name="volume" value="small"> Small</label>
-          <label><input type="checkbox" name="volume" value="medium"> Medium</label>
-          <label><input type="checkbox" name="volume" value="large"> Large</label>
-        </div>
-      </div>
+      <div class="smoke-panel dimmable">
+        <div class="panel-title">Smoke Description</div>
 
-      <div class="form-section dimmable">
-        <span class="field-label">Color</span>
-        <div class="check-group">
-          <label><input type="checkbox" name="color" value="white"> White</label>
-          <label><input type="checkbox" name="color" value="grey"> Grey</label>
-          <label><input type="checkbox" name="color" value="black"> Black</label>
-          <label><input type="checkbox" name="color" value="brown"> Brown</label>
+        <div class="form-section">
+          <span class="field-label">Volume</span>
+          <div class="check-group">
+            <label><input type="checkbox" name="volume" value="small"> Small</label>
+            <label><input type="checkbox" name="volume" value="medium"> Medium</label>
+            <label><input type="checkbox" name="volume" value="large"> Large</label>
+          </div>
         </div>
-      </div>
 
-      <div class="form-section dimmable">
-        <span class="field-label">Character</span>
-        <div class="check-group">
-          <label><input type="checkbox" name="character" value="thin"> Thin</label>
-          <label><input type="checkbox" name="character" value="heavy"> Heavy</label>
-          <label><input type="checkbox" name="character" value="billowing"> Billowing</label>
-          <label><input type="checkbox" name="character" value="blanket"> Blanket</label>
-          <label><input type="checkbox" name="character" value="column"> Column</label>
-          <label><input type="checkbox" name="character" value="puffing"> Puffing</label>
+        <div class="form-section">
+          <span class="field-label">Color</span>
+          <div class="check-group">
+            <label><input type="checkbox" name="color" value="white"> White</label>
+            <label><input type="checkbox" name="color" value="grey"> Grey</label>
+            <label><input type="checkbox" name="color" value="black"> Black</label>
+            <label><input type="checkbox" name="color" value="brown"> Brown</label>
+          </div>
         </div>
-      </div>
 
-      <div class="form-section dimmable">
-        <span class="field-label">Drift Direction</span>
-        <div class="radio-group">
-          <label><input type="radio" name="drift" value="N"> N</label>
-          <label><input type="radio" name="drift" value="S"> S</label>
-          <label><input type="radio" name="drift" value="E"> E</label>
-          <label><input type="radio" name="drift" value="W"> W</label>
+        <div class="form-section">
+          <span class="field-label">Character</span>
+          <div class="check-group">
+            <label><input type="checkbox" name="character" value="thin"> Thin</label>
+            <label><input type="checkbox" name="character" value="heavy"> Heavy</label>
+            <label><input type="checkbox" name="character" value="billowing"> Billowing</label>
+            <label><input type="checkbox" name="character" value="blanket"> Blanket</label>
+            <label><input type="checkbox" name="character" value="column"> Column</label>
+            <label><input type="checkbox" name="character" value="puffing"> Puffing</label>
+          </div>
         </div>
-      </div>
+
+        <div class="form-section">
+          <span class="field-label">Drift Direction</span>
+          <div class="radio-group">
+            <label><input type="radio" name="drift" value="N"> N</label>
+            <label><input type="radio" name="drift" value="S"> S</label>
+            <label><input type="radio" name="drift" value="E"> E</label>
+            <label><input type="radio" name="drift" value="W"> W</label>
+          </div>
+        </div>
+
+      </div><!-- /smoke-panel -->
 
       <div class="form-section dimmable">
         <span class="field-label">Fuel Type <span class="opt-note">(optional)</span></span>
