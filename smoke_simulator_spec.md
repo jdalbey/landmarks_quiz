@@ -38,7 +38,6 @@ Each photograph has associated metadata that includes:
 The user can navigate through the full set of photographs for the active lookout:
 
 - Step left or right sequentially through adjacent photographs
-- Select a specific photograph directly from an index or list
 
 ## 2.4 Smoke Images
 
@@ -72,11 +71,11 @@ A training scenario presents a simulated smoke in the landscape for the trainee 
 
 ## 5.1 Training Modes
 
-The user can select from two training modes. A scenario can operate in either mode.
+A scenario can operate in one of two modes:
 
 ## 5.1.1 Panorama Search Mode
 
-In search mode there is no clue provided as to which portion of the landscape contains the smoke. The user must cycle through all panorama photographs to find the one containing the smoke.
+In search mode the user must cycle through all panorama photographs to find the one containing the smoke.
 
 ## 5.1.2 Single Photograph Mode
 
@@ -84,13 +83,13 @@ In this mode a single landscape photograph is presented with a smoke visible.  T
 
 ## 5.2 Difficulty level
 
-Each scenario has one of three difficulty levels (Easy, Medium, Difficult) for the level of challenge associated with locating and reporting a given smoke.  The difficulty combines three factors: how hard it is to see the smoke, how hard it is to determine if the smoke is false, legitimate, or illegitimate, and how hard it is to determine the smoke's exact position. The user can select what level of difficulty they desire.
+Each scenario has one of three difficulty levels (Easy, Medium, Difficult) for the level of challenge associated with locating and reporting a given smoke.  The difficulty combines three factors: how hard it is to see the smoke, how hard it is to determine if the smoke is false, legitimate, or illegitimate, and how hard it is to determine the smoke's exact position.
 
 ## 5.3 Training task
 
 In each scenario, the application overlays an illustration of smoke rising from a predetermined point in a photograph. The user's task is to find the smoke and complete a full smoke report, providing all of the following:
 
-- Whether it is a false, legitimate, or illegitimate smoke.  For the latter, the remaining fields are necessary.
+- Whether it is a false, legitimate, or illegitimate smoke.  For the illegitimate smokes only, the remaining fields are necessary.  Definitions:
   False = not smoke (e.g., dust or fog)
   legitimate = authorized (e.g., prescribed burn, campground campfire)
   illegitimate = unauthorized 
@@ -100,14 +99,14 @@ In each scenario, the application overlays an illustration of smoke rising from 
 - Legal description of the smoke location
 - Whether the base of the smoke is visible
 - Description of the smoke, including shape, color, and direction of drift
-- The agency jurisdiction. Question: How to distinguish FKU areas that we ignore, like Round Mtn, from FKU areas that we respond to, like Tivy Mountain?  Are the latter SRA?  What identifier should we use for each?  None/FKU  or FKU/SRA or ...?
+- The agency jurisdiction. 
 - Dispatcher to report to, or that it would not be reported.
 
 ## 5.4 Scenario Metadata
 
 A scenario is comprised of 
 
-- a scenario ID and optionally a name.
+- a scenario ID.
 - a smoke image and associated metadata (including a photograph ID)
 - a difficulty level (easy, medium, difficult)
 
@@ -123,7 +122,7 @@ Below each photograph, the application displays a section of the fire finder bas
 
 ## 6.2 Firefinder front sight
 
-- A graphic overlay on the display resembling the forward sight of the fire finder can be turned on and off by the user.  A set of crosshairs is displayed and can be repositioned by the user via mouse movement, gestures, or key presses. The user slides the crosshairs left or right until the crosshairs are aligned with the target in the photograph.
+- A graphic overlay on the display resembling the forward sight of the fire finder can be turned on and off by the user.  A set of crosshairs is displayed and can be repositioned by the user via mouse movement or key presses. The user slides the crosshairs left or right until the crosshairs are aligned with the target in the photograph.
 - In sync with the crosshairs, a sighting arrow and minutes scale representing the vernier plate on the rotating sight ring of the Osborne Firefinder moves left and right.
 - Once the user has positioned the crosshairs, they read the azimuth value (degrees) from the position of the sighting arrow above the index marks on the base plate, and determine the minutes using the vernier plate. 
 

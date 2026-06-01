@@ -8,50 +8,26 @@
 
 The application is a **single-page application (SPA)** with distinct views swapped in and out by JavaScript. Separate HTML files make state transfer awkward; one shell page keeps the photo, firefinder, and report form accessible simultaneously without data loss between steps.
 
-There is no separate setup screen. All scenario controls live in a persistent **header bar** at the top of the page. The large content area below the header serves dual purpose: it shows instructions when no scenario is active (idle state), and the landscape photo + firefinder when a scenario is running.
+There is no separate setup screen. The lookout and scenario selectors live in a persistent **header bar** at the top of the page. The large content area below the header serves dual purpose: it shows instructions when the application is launched, and the landscape photo + firefinder after a scenario has been selected.
 
-The workflow is **open**: the trainee can abort a scenario at any time, adjust any control, and start fresh. No confirmations required.
+The workflow is **open**: the trainee can change scenarios at any time, open the report page at any time, etc.  No confirmations required.  Certain controls are enabled only in certain states (Binoculars are only available when a smoke is visible.)
 
-The **map view** is the justified exception: it remains in a separate named browser tab (as currently prototyped in `mapview.html`), opened by the `M` key and reused on subsequent presses.
+The **map view** is the justified exception: it remains in a separate named browser tab (as currently prototyped in `mapview.html`), opened by the `M` key and reused on subsequent presses. If map view is invoked when the firefinder is not visible, the map opens without a bearing line. (Map view is already implemented in `mapview.html` and includes a bearing line with a distance scale to 25 miles, pan/zoom feature, named landmarks, PLSS and USFS layers.)
 
 ---
 
 ## 2. Screens
 
-### 2.1 Header Bar
-
-Persistent across all states. Contains all scenario controls as dropdowns:
-
-```
-[Lookout ▾]  [Mode ▾]  [Difficulty ▾]  [Scenario ▾]  [▶ Start]
-```
-
-- **Lookout** — dropdown listing available lookout stations: Buck Rock / Delilah / Park Ridge
-- **Mode** — dropdown: *Single Photo* / *Panorama Search*
-- **Difficulty** — dropdown: *Easy* / *Medium* / *Difficult*
-- **Scenario** — dropdown listing scenarios matching current Lookout/Difficulty filters, plus a *Random* option at the top
-
-During an **active scenario**, Lookout, Mode, and Difficulty are disabled (changing either invalidates the current photo and smoke metadata). The **▶ Start** button is replaced by a **Quit Scenario** button, which re-enables all controls and returns to the idle state — no confirmation dialog.
-
----
-
-### 2.2 Idle State
+### 2.1 Initial State
 
 When no scenario is active the content area displays instructions in place of the landscape photo. The firefinder azimuth strip is hidden. Suggested content:
 
 - "Your challenge is to identify a smoke in the landscape, determine its location, and complete a smoke report form."
-
-- "Adjust the values above for Lookout, Mode, and Difficulty. "
-
-- "Select a scenario from the dropbox above and press Start."
-
-- Keyboard shortcut reference (`O` sight toggle, `M` map, `← →` move sight, `Shift+← →` move 1°)
-
-  
+- "Select the desired Lookout and choose a Scenario."
 
 ---
 
-### 2.3 Training Screen
+### 2.2 Training Screen
 
 The main activity view, shown when a scenario is running.
 
@@ -59,34 +35,44 @@ The main activity view, shown when a scenario is running.
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
-│ [Lookout ▾]  [Mode ▾]  [Difficulty ▾]  [Scenario ▾]   [▶ Start]│  header bar
-├─────────┬─────┬───────────────────────────────────────────┬────┤
-│         │     │                                           │    │
-│ compass │  ‹  │  landscape photo + sight overlay          │ ›  │  panorama nav
-│         │     │                                           │    │
-├─────────┴─────┴───────────────────────────────────────────┴────┤
+│ [Lookout ▾][Scenario ▾] [Binoculars][Firefinder][Map][Report][Help] │  header bar
+├───┬───┬────────────────────────────────────────────────┬───┬───┤
+│   │xx°│                                                │xx°│   │  photo bearing range
+│   ├───┘                                                └───│   │
+│   │                                                        │   │
+│ ‹ │         landscape photo + firefinder overlay           │ › │  panorama nav
+│   │                                                        │   │
+│   │                                                        │   │
+├───┴────────────────────────────────────────────────────────┴───┤
 │                azimuth strip (firefinder base plate)           │
-├────────────────────────────────────────────────────────────────┤
-│  Az: 274° 32′    [O sight]  [M map]    [Open Report ▸]         │  status bar
 └────────────────────────────────────────────────────────────────┘
 ```
 
+**Header bar** — 
 
-**Header bar** — Lookout, Mode, and Difficulty are disabled and visually dimmed. **Quit Scenario** replaces ▶ Start; pressing it immediately ends the scenario, re-enables all controls, and returns to the idle state.
+- **Lookout** — dropdown listing available lookout stations: Buck Rock / Delilah / Park Ridge.
 
-**Panorama navigation** — `‹` and `›` arrow buttons step through photographs sequentially. In Single Photo mode they are hidden.  In Panorama Search mode, the smoke is hidden until the trainee navigates to the correct photograph,
+- **Scenario** — dropdown listing scenarios by ID for the selected Lookout, plus a *Random* option at the top. Each scenario item is marked with a difficulty level by the first letter (E,M,D). A check mark appears next to each scenario for which the user has submitted a report (during this session - no persistence).
+- **Help** — Displays a popup window with directions for using the simulation.
+- `B` — toggle binoculars (closeup photograph, like in Learn-your-territory.html. Enabled when smoke is visible.)
+- `F` — toggle firefinder sight overlay (enabled when a photo is present)
+- `M` — open map view (to a named browser tab, reused)
+- sight movement keys (when sight overlay is present) ← / →   move 1′  | Shift + ← / →   move 1° 
+- `Tab` — toggle the report page
 
-**Compass Indicator** - a circular compass (see compass.png). In the outer ring, highlight (cyan) the range of bearings corresponding to the view in the current photograph. 
+When a scenario is selected, the first photo in the scenario is displayed, the controls are reset, and the report form is cleared, and the map view tab is closed.
+
+Consistent with the open workflow theme, the user may choose a scenario at any time. The Lookout can be changed at any time, but only effects what is displayed in the Scenario dropdown. (Is there a way to link these into a single control?)
+
+**Panorama navigation** — `‹` and `›` arrow buttons step through photographs sequentially. (Page Up/Page Down are keyboard alternates).  In Single Photo mode they are hidden.  In Panorama Search mode, the smoke is hidden until the trainee navigates to the correct photograph,  This mode is determined by the scenario metadata settings.  In general the administrator should assign Difficult level to scenarios in Panorama Search mode. 
+
+**Photo bearing range** - When a photo is displayed in the window it will be annotated by a small white box in the upper left and right corners.  The left upper box displays the bearing of the left edge of the photo, and the right upper box displays the bearing of the right edge of the photo. These two boxes disappear when the firefinder sight is on (because the azimuth strip contains the same information.)
 
 **Azimuth strip** — the firefinder base plate and vernier plate (as prototyped in `firefinder.html`).
 
-**Status bar** — shows the current azimuth readout and controls:
+**Closeup View** - A zoom closeup photo can be toggled when a smoke is visible in a photograph. It behaves the same as the one in Learn-your-territory.html. 
 
-- `B` — toggle binoculars (closeup photograph, like in Learn-your-territory.html. Enabled when smoke is visible.)
-- `O` — toggle sight overlay
-- `M` — open map view (named tab, reused)
-- sight movement keys (when sight overlay is present) ← / →   move 1′  | Shift + ← / →   move 1° 
-- **Open Report** — slides the report panel in from the right
+**Firefinder overlay** - Already implemented in  `firefinder.html`.   Needs additional mouse control added: clicking the mouse on the photograph moves the firefinder sight to that point. 
 
 ---
 
@@ -98,6 +84,7 @@ A full page form the user completes after gathering the needed data.
 
 | Field | Input type |
 |---|---|
+| Lookout Name | Radio: Buck Rock / Park Ridge / Delilah |
 | Classification | Radio: False / Legitimate / Illegitimate |
 | Azimuth — degrees | Number field (the trainee transcribes manually) |
 | Azimuth — minutes | Number field (the trainee transcribes manually) |
@@ -112,14 +99,22 @@ A full page form the user completes after gathering the needed data.
 | Fuel type (optional) | Checkbox: Grass / Brush / Timber / Structure / Vehicle |
 | Jurisdiction | radio buttons: SQF SNF SEKI FKU TUU |
 | Dispatcher | radio buttons: Porterville,  Sierra,  Ash Mtn Fire, None |
+| Best Access | text input |
+| Time and Date | text input |
 
 When **False** is selected as the classification, the remaining fields dim out (not required).
 
-A **Submit Report** button at the bottom of the panel triggers evaluation.
+A **Submit** button at the bottom of the panel triggers evaluation.  
+
+A **Clear** button clears the form (both user entries and evaluation remarks).
+
+Pressing **Tab** toggles the form off (and returns to the Training Screen on the same scenario.)
+
+A **Print** button presents a printable version (PDF?) of the current form.
 
 ---
 
-### 2.5 Evaluation
+### 2.4 Evaluation
 
 The Report screen is annotated with the correct results after the trainee submits a report. 
 
@@ -129,23 +124,17 @@ The Report screen is annotated with the correct results after the trainee submit
 - Correct value shown beside or beneath any incorrect answer
 - Summary score (e.g., "7 of 9 correct")
 
-**Actions:**
-
-- **Close** — close the results screen.
-
-  
-
 ---
 
 ## 3. Navigation Flow
 
 ```
-Idle state (instructions in content area, all header controls active)
-  └─[▶ Start]──────────► Training Screen (photo + firefinder)
+Initial state (instructions in content area, all header controls active)
+  └─[Scenario selected]──────► Training Screen (photo + firefinder)
                              ├─[‹ ›]────────► same screen, different photo
                              ├─[B]──────────► Binoculars (closeup photo of smoke)
                              ├─[M]──────────► Map tab (named window, reused)
-                             ├─[Open Report]► Report page form appears
+                             ├─[Tab]────────► Report page form appears
                              │    └─[Submit]► Results annotate user's report
                              │               └─[Close]──► Training Screen
                              └─[Quit scenario]──► Idle state (controls re-enabled)
