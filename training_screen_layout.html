@@ -26,6 +26,58 @@
     padding: 15px; z-index: 999;
   }
   #report-page.open { display: block; }
+
+  /* ── Binoculars closeup modal ──────────────────────────────────── */
+  #modal-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.5);  /* Dim the photo just a bit */
+    z-index: 1100;
+    animation: backdropIn 0.25s ease forwards;
+  }
+  #modal-backdrop.visible { display: flex; align-items: center; justify-content: center; }
+
+  @keyframes backdropIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  #modal-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #modal-img {
+    display: block;
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 4px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    transform-origin: center center;
+    animation: zoomIn 0.35s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes zoomIn {
+    from { transform: scale(0.04); opacity: 0.6; }
+    to   { transform: scale(1);    opacity: 1;   }
+  }
+
+  #modal-close {
+    position: absolute;
+    top: -14px; right: -14px;
+    width: 28px; height: 28px;
+    border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.15);
+    color: #fff; font-size: 16px;
+    line-height: 28px; text-align: center;
+    cursor: pointer; transition: background 0.15s;
+    z-index: 1102;
+  }
+  #modal-close:hover { background: rgba(255,255,255,0.3); }
 </style>
 </head>
 <body>
@@ -83,7 +135,8 @@
       <table width="100%" border="1" cellpadding="2" cellspacing="0">
         <tr>
           <td>262&#176;</td>
-          <td>&nbsp;</td>
+            <!-- placeholder for compass arrow -->
+          <td align="center">&#x2B06;</td>
           <td align="right">287&#176;</td>
         </tr>
         <tr>
@@ -133,6 +186,14 @@
     </ul>
     <p>Read azimuth degrees from the base plate strip below the photo, then
        use the vernier scale to determine the minutes.</p>
+  </div>
+</div>
+
+<!-- ── Binoculars closeup modal ──────────────────────────────────── -->
+<div id="modal-backdrop" role="dialog" aria-modal="true" aria-label="Smoke closeup">
+  <div id="modal-content">
+    <button id="modal-close" aria-label="Close">&#10005;</button>
+    <img id="modal-img" src="" alt="Smoke closeup">
   </div>
 </div>
 
@@ -317,6 +378,8 @@ const reportPage   = document.getElementById('report-page');
 const photoEl      = document.getElementById('photo');
 const sightCvs     = document.getElementById('sight-canvas');
 const azCvs        = document.getElementById('azimuth-canvas');
+const binoBackdrop = document.getElementById('modal-backdrop');
+const binoImg      = document.getElementById('modal-img');
 
 // ── Help modal ─────────────────────────────────────────────────────
 document.getElementById('help-btn').addEventListener('click', () =>
@@ -375,6 +438,36 @@ function toggleSight() {
 }
 
 document.getElementById('btn-firefinder').addEventListener('click', toggleSight);
+
+// ── Binoculars closeup ─────────────────────────────────────────────
+function openBinoculars() {
+  const photoRect = photoEl.getBoundingClientRect();
+  const cx = photoRect.left + photoRect.width  / 2;
+  const cy = photoRect.top  + photoRect.height / 2;
+  binoImg.style.transformOrigin =
+    (cx / window.innerWidth  * 100).toFixed(2) + '% ' +
+    (cy / window.innerHeight * 100).toFixed(2) + '%';
+
+  binoImg.src = 'smoke_circle.png';
+
+  // Re-trigger the zoom animation
+  binoImg.style.animation = 'none';
+  void binoImg.offsetWidth;
+  binoImg.style.animation = '';
+
+  binoBackdrop.classList.add('visible');
+}
+
+function closeBinoculars() {
+  binoBackdrop.classList.remove('visible');
+  setTimeout(() => { binoImg.src = ''; }, 300);
+}
+
+document.getElementById('btn-binoculars').addEventListener('click', openBinoculars);
+document.getElementById('modal-close').addEventListener('click', closeBinoculars);
+binoBackdrop.addEventListener('click', e => {
+  if (e.target === binoBackdrop) { closeBinoculars(); }
+});
 
 //--- Map View ------------------------------------------------------------
 function openMapView() {
@@ -556,6 +649,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     helpBackdrop.classList.remove('open');
     closeReport();
+    closeBinoculars();
     return;
   }
 
@@ -567,6 +661,8 @@ document.addEventListener('keydown', e => {
     }
     return;
   }
+
+  if (e.key === 'b' || e.key === 'B') { openBinoculars(); return; }
 
   if (e.key === 'f' || e.key === 'F') { toggleSight(); return; }
 
