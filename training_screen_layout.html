@@ -75,7 +75,14 @@
   }
 
   #prev-btn, #next-btn { font-size: 2em; padding: 12px 8px; }
-
+  #btn-expand { 
+    background: #2b2b2b;
+    border: none;
+    cursor: pointer;
+    padding: 1px;
+    margin: 2px 2px 2px 2px;
+  }
+  
   #firefinder-hint {
     font-size: 0.78em;
     color: #a89848;
@@ -258,7 +265,7 @@
 </head>
 <body>
 
-<table border="1" width="100%" cellpadding="4" cellspacing="0">
+<table id="container" border="1" width="100%" cellpadding="4" cellspacing="0">
 
   <!-- ═══ Header bar ═══════════════════════════════════════════════ -->
   <tr>
@@ -293,6 +300,8 @@
       <button type="button" id="btn-report" disabled>Report</button>
       &emsp;
             <button type="button" id="help-btn">Help</button>
+      &nbsp;
+            <button type="button" id="btn-expand"><img id="expand-icon-img" src="expand-icon.png" width="18px"/></button>
           </td>
         </tr>
       </table>
@@ -612,6 +621,7 @@ let sightShownOnce = false;
 let PW = 0, PH = 0;
 
 // ── Element references ─────────────────────────────────────────────
+const container    = document.getElementById('container');  
 const helpBackdrop = document.getElementById('help-backdrop');
 const reportPage   = document.getElementById('report-page');
 const photoEl      = document.getElementById('photo');
@@ -763,6 +773,38 @@ function openMapView() {
 
 document.getElementById('btn-map').addEventListener('click', openMapView);
 
+const expandIconImg = document.getElementById('expand-icon-img');
+
+document.getElementById('btn-expand').addEventListener('click', toggleFullscreen);
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    if (container.requestFullscreen) {
+      container.requestFullscreen();
+    } else if (container.webkitRequestFullscreen) {
+      container.webkitRequestFullscreen();
+    } else if (container.msRequestFullscreen) {
+      container.msRequestFullscreen();
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  if (document.fullscreenElement) {
+    expandIconImg.src = 'collapse-icon.png';
+  } else {
+    expandIconImg.src = 'expand-icon.png';
+  }
+});
+  
 // ── Azimuth math ───────────────────────────────────────────────────
 function currentAz() { return LEFT_AZ + sightFrac * AZ_RANGE; }
 
