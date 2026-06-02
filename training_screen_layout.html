@@ -91,7 +91,12 @@
     font-size: 0.9em;
   }
 
-  #classification-feedback { flex-basis: 100%; padding-left: 176px; }
+  .field-feedback {
+    font-size: 0.85em;
+    font-weight: bold;
+    flex-shrink: 0;
+    align-self: center;
+  }
 
   /* ── Smoke description panel ──────────────────────────────────── */
   .smoke-panel {
@@ -113,6 +118,28 @@
 
   #report-page input[type="radio"],
   #report-page input[type="checkbox"] { accent-color: #c07800; }
+
+  #report-close {
+    position: absolute;
+    top: 8px; right: 12px;
+    background: transparent;
+    border: none;
+    color: #5a3010;
+    font-size: 1.3em;
+    cursor: pointer;
+    padding: 2px 8px;
+    line-height: 1;
+    border-radius: 50%;
+  }
+  #report-close:hover { background: rgba(0,0,0,0.08); }
+
+  #report-footer {
+    display: flex;
+    gap: 10px;
+    padding-top: 14px;
+    margin-top: 10px;
+    border-top: 1px solid #d8cfc0;
+  }
 
   /* ── Binoculars closeup modal ──────────────────────────────────── */
   #modal-backdrop {
@@ -287,12 +314,10 @@
   <!-- ── Report page ───────────────────────────────────────────── -->
   <div id="report-page">
 
+    <button id="report-close" aria-label="Close">&#10005;</button>
+
     <div id="report-header">
       <h2>Smoke Report</h2>
-      <button class="rbtn primary" id="submit-btn">Submit</button>
-      <button class="rbtn" id="clear-btn">Clear</button>
-      <button class="rbtn" id="print-btn">Print</button>
-      <button class="rbtn" id="close-report-btn">Close &nbsp;<kbd style="background:#1c180e">Tab</kbd></button>
     </div>
 
     <div id="report-body">
@@ -300,6 +325,7 @@
       <div class="form-section dimmable">
         <span class="field-label">Time and Date</span>
         <input type="text" class="wide" id="time-date" placeholder="HHmm  DD Mon YYYY">
+        <span class="field-feedback" id="td-feedback"></span>
       </div>
 
       <div class="form-section">
@@ -309,6 +335,7 @@
           <label><input type="radio" name="rpt-lookout" value="park_ridge"> Park Ridge</label>
           <label><input type="radio" name="rpt-lookout" value="delilah"> Delilah</label>
         </div>
+        <span class="field-feedback" id="lookout-feedback"></span>
       </div>
 
       <div class="form-section">
@@ -318,37 +345,40 @@
           <label><input type="radio" name="classification" value="legitimate"> Legitimate</label>
           <label><input type="radio" name="classification" value="illegitimate"> Illegitimate</label>
         </div>
-        <div id="classification-feedback"></div>
+        <span class="field-feedback" id="classification-feedback"></span>
       </div>
 
       <div class="form-section dimmable">
         <span class="field-label">Azimuth</span>
         <div class="inline-fields">
-          <label>Degrees <input type="number" id="az-deg" min="0" max="359" placeholder="0–359"></label>
-          <label>Minutes <input type="number" id="az-min" min="0" max="59" placeholder="0–59"></label>
+          <label>Degrees <input type="text" id="az-deg" min="0" max="359" placeholder="0–359" maxlength="4" size="4">&emsp;</label>
+          <label>Minutes <input type="text" id="az-min" min="0" max="59" placeholder="0–59" maxlength="4" size="4"></label>
         </div>
+        <span class="field-feedback" id="azimuth-feedback"></span>
       </div>
 
       <div class="form-section dimmable">
         <span class="field-label">Distance</span>
         <div class="inline-fields">
-          <label>Miles <input type="number" id="distance" min="0" step="0.1" placeholder="mi"></label>
+          <label><input type="text" id="distance" min="0" placeholder="#" maxlength="5" size="5">miles</label>
         </div>
+        <span class="field-feedback" id="distance-feedback"></span>
       </div>
 
       <div class="form-section dimmable">
         <span class="field-label">Landmark Name</span>
-        <input type="text" class="wide" id="landmark" placeholder="nearest named landmark">
+        <input type="text" class="wide" id="landmark" placeholder="nearest named landmark" maxlength="60" size="60">
       </div>
 
       <div class="form-section dimmable">
         <span class="field-label">Legal Description</span>
         <div class="inline-fields">
-          <label>Township <input type="text" id="township" placeholder="T__S"></label>
-          <label>Range <input type="text" id="range-f" placeholder="R__E"></label>
-          <label>Section <input type="number" id="section" min="1" max="36" placeholder="1–36"></label>
-          <label>Quarter <input type="text" id="quarter" placeholder="NE¼"></label>
+          <label>Township <input type="text" id="township" placeholder="#" maxlength="2" size="2">S&emsp;</label>
+          <label>Range <input type="text" id="range-f" placeholder="#" maxlength="2" size="2">E&emsp;</label>
+          <label>Section <input type="number" id="section" min="1" max="36" placeholder="1–36" maxlength="4" size="4">&emsp;</label>
+          <label>Quarter <input type="text" id="quarter" placeholder="NE¼" maxlength="4" size="4"></label>
         </div>
+        <span class="field-feedback" id="legal-feedback"></span>
       </div>
 
       <div class="form-section dimmable">
@@ -357,6 +387,7 @@
           <label><input type="radio" name="base-visible" value="yes"> Yes</label>
           <label><input type="radio" name="base-visible" value="no"> No</label>
         </div>
+        <span class="field-feedback" id="base-visible-feedback"></span>
       </div>
 
       <div class="smoke-panel dimmable">
@@ -369,6 +400,7 @@
             <label><input type="checkbox" name="volume" value="medium"> Medium</label>
             <label><input type="checkbox" name="volume" value="large"> Large</label>
           </div>
+          <span class="field-feedback" id="volume-feedback"></span>
         </div>
 
         <div class="form-section">
@@ -379,6 +411,7 @@
             <label><input type="checkbox" name="color" value="black"> Black</label>
             <label><input type="checkbox" name="color" value="brown"> Brown</label>
           </div>
+          <span class="field-feedback" id="color-feedback"></span>
         </div>
 
         <div class="form-section">
@@ -391,6 +424,7 @@
             <label><input type="checkbox" name="character" value="column"> Column</label>
             <label><input type="checkbox" name="character" value="puffing"> Puffing</label>
           </div>
+          <span class="field-feedback" id="character-feedback"></span>
         </div>
 
         <div class="form-section">
@@ -401,6 +435,7 @@
             <label><input type="radio" name="drift" value="E"> E</label>
             <label><input type="radio" name="drift" value="W"> W</label>
           </div>
+          <span class="field-feedback" id="drift-feedback"></span>
         </div>
 
       </div><!-- /smoke-panel -->
@@ -414,6 +449,7 @@
           <label><input type="checkbox" name="fuel" value="structure"> Structure</label>
           <label><input type="checkbox" name="fuel" value="vehicle"> Vehicle</label>
         </div>
+        <span class="field-feedback" id="fuel-feedback"></span>
       </div>
 
       <div class="form-section dimmable">
@@ -425,6 +461,7 @@
           <label><input type="radio" name="jurisdiction" value="FKU"> FKU</label>
           <label><input type="radio" name="jurisdiction" value="TUU"> TUU</label>
         </div>
+        <span class="field-feedback" id="jurisdiction-feedback"></span>
       </div>
 
       <div class="form-section dimmable">
@@ -435,13 +472,20 @@
           <label><input type="radio" name="dispatcher" value="ash_mtn"> Ash Mtn Fire</label>
           <label><input type="radio" name="dispatcher" value="none"> None</label>
         </div>
+        <span class="field-feedback" id="dispatcher-feedback"></span>
       </div>
 
       <div class="form-section dimmable">
         <span class="field-label">Best Access (optional)</span>
-        <input type="text" class="wide" id="best-access" placeholder="road or route">
+        <input type="text" class="wide" id="best-access" placeholder="road or route" maxlength="120" size="60">
       </div>
 
+
+      <div id="report-footer">
+        <button id="submit-btn">Submit</button>
+        <button id="clear-btn">Clear</button>
+        <button id="print-btn">Print</button>
+      </div>
 
     </div><!-- /report-body -->
   </div><!-- /report-page -->
@@ -488,8 +532,14 @@ helpBackdrop.addEventListener('click', e => {
 function openReport()  { reportPage.classList.add('open'); }
 function closeReport() { reportPage.classList.remove('open'); }
 
-document.getElementById('btn-report').addEventListener('click', openReport);
-document.getElementById('close-report-btn').addEventListener('click', closeReport);
+document.getElementById('btn-report').addEventListener('click', () => {
+  if (reportPage.classList.contains('open')) {
+    closeReport();
+  } else {
+    openReport();
+  }
+});
+document.getElementById('report-close').addEventListener('click', closeReport);
 
 // ── Firefinder init ────────────────────────────────────────────────
 function initFirefinder() {
@@ -730,8 +780,12 @@ function evaluateReport() {
 document.getElementById('submit-btn').addEventListener('click', evaluateReport);
 
 function clearReport() {
-  document.querySelectorAll('input[name="classification"]').forEach(r => r.checked = false);
-  document.getElementById('classification-feedback').textContent = '';
+  document.querySelectorAll('#report-body input[type="text"], #report-body input[type="number"]')
+    .forEach(el => el.value = '');
+  document.querySelectorAll('#report-body input[type="radio"], #report-body input[type="checkbox"]')
+    .forEach(el => el.checked = false);
+  document.querySelectorAll('.field-feedback')
+    .forEach(el => el.textContent = '');
 }
 
 document.getElementById('clear-btn').addEventListener('click', clearReport);
