@@ -107,7 +107,7 @@
 
   #report-page {
     display: none;
-    position: fixed; top: 5%; left: 10%; width: 80%; height: 90%;
+    position: fixed; top: 5%; left: 10%; width: 80%; height: 90%; max-width: 800px;
     overflow-y: auto; background: #f5f0e8; border: 2px solid #c07800;
     padding: 15px; z-index: 999; color: #2a2018;
   }
@@ -390,11 +390,11 @@
   <div id="help-modal" role="dialog" aria-modal="true" aria-label="Help">
     <button id="help-close" aria-label="Close">✕</button>
     <h2>How to Use the Simulator</h2>
-    <p>Select a Lookout station and then choose a Scenario to begin training.</p>
-    <p>If you see smoke, use the Binoculars to get a close up view.</p>
-    <p>Use the Firefinder to determine the azimuth.</p>
-    <p>The Map will help you determine the distance and legal description.</p>
-    <p>Complete the Report form. Submit it to receive an evaluation.</p>
+    <p>Select a Lookout station and then choose a Scenario to begin training.<br>
+    If you see smoke, use the Binoculars to get a close up view.<br>
+    Use the Firefinder to determine the azimuth.<br>
+    The Map will help you determine the distance and legal description.<br>
+    Complete the Report form. Submit it to receive an evaluation.</p>
     <h3>Keyboard Shortcuts</h3>
     <table>
       <tr><td align="center"><kbd>B</kbd></td><td>Binoculars</td></tr>
@@ -946,7 +946,8 @@ function setFeedback(el, text, correct) {
   el.textContent = text;
   el.style.color  = correct ? 'green' : 'red';
   el.style.fontWeight = 'bold';
-  el.style.marginTop  = '4px';
+  el.style.marginTop  = '0px';
+  el.style.fontSize    = '0.9em';
 }
 
 function evaluateReport() {
@@ -956,9 +957,9 @@ function evaluateReport() {
   if (!selected) {
     setFeedback(classificationFb, 'This field is required', false);
   } else if (selected.value === 'illegitimate') {
-    setFeedback(classificationFb, 'Correct', true);
+    setFeedback(classificationFb, '✔', true);
   } else {
-    setFeedback(classificationFb, 'Incorrect', false);
+    setFeedback(classificationFb, 'X', false);
   }
 }
 
