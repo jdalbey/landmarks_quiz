@@ -320,7 +320,7 @@
     <td>
       <table width="100%" border="1" cellpadding="2" cellspacing="0">
         <tr id="compass-bar" style="display:none;">
-          <td id="left-bearing" style="font-family: monospace;">262&#176;</td>
+          <td id="left-bearing" style="font-family: monospace;">281&#176;</td>
           <td align="center">
             <!-- compass arrow — rotate arrow-group to match photo bearing -->
             <svg id="compass-svg" xmlns="http://www.w3.org/2000/svg"
@@ -328,13 +328,13 @@
               <circle cx="50" cy="50" r="46"
                       fill="none" stroke="#ecef99" stroke-width="4"/>
               <!-- rotate(degrees, centerX, centerY) -->
-              <g id="arrow-group" transform="rotate(270, 50, 50)">
+              <g id="arrow-group" transform="rotate(290, 50, 50)">
                 <polygon points="50,10 20,75 50,58 80,75"
                          fill="#ecef99"/>
               </g>
             </svg>
           </td>
-          <td id="right-bearing" align="right" style="font-family: monospace;">287&#176;</td>
+          <td id="right-bearing" align="right" style="font-family: monospace;">316&#176;</td>
         </tr>
         <tr>
           <td colspan="3" align="center">
@@ -347,7 +347,7 @@
             </div>
             <div id="photo-area" style="display:none">
               <img id="photo"
-                   src="mockup/page5smoke.png"
+                   src="Island_smoke.png"
                    alt="Landscape panorama — Delilah West"
                    width="900">
               <!-- sight overlay canvas: positioned over photo via JS/CSS -->
@@ -607,8 +607,8 @@
 'use strict';
 
 // ── Firefinder constants ───────────────────────────────────────────
-const LEFT_AZ  = 262;
-const RIGHT_AZ = 287;
+const LEFT_AZ  = 281;
+const RIGHT_AZ = 316;
 const AZ_RANGE = RIGHT_AZ - LEFT_AZ;
 const VH = 44;   // vernier strip height px
 const BH = 58;   // base plate height px
@@ -621,7 +621,6 @@ let sightShownOnce = false;
 let PW = 0, PH = 0;
 
 // ── Element references ─────────────────────────────────────────────
-const container    = document.getElementById('container');  
 const helpBackdrop = document.getElementById('help-backdrop');
 const reportPage   = document.getElementById('report-page');
 const photoEl      = document.getElementById('photo');
@@ -779,12 +778,13 @@ document.getElementById('btn-expand').addEventListener('click', toggleFullscreen
 
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
-    if (container.requestFullscreen) {
-      container.requestFullscreen();
-    } else if (container.webkitRequestFullscreen) {
-      container.webkitRequestFullscreen();
-    } else if (container.msRequestFullscreen) {
-      container.msRequestFullscreen();
+    const el = document.documentElement;
+    if (el.requestFullscreen) {
+      el.requestFullscreen();
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    } else if (el.msRequestFullscreen) {
+      el.msRequestFullscreen();
     }
   } else {
     if (document.exitFullscreen) {
