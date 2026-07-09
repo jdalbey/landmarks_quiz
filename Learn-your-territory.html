@@ -118,10 +118,10 @@
     //           set to null (no quotes) to disable the closeup for a landmark
     const landmarks = [
       { id:1, x1:230,  y1:60, x2:230,  y2:395, label: "Dude Ridge/SQF",          hidden: false, closeup: "images/closeups/DudeRidge.png"    },
-      { id:2, x1:525,  y1:60, x2:525,  y2:390, label: "Squaw Valley (area)/FKU", hidden: false, closeup: "images/closeups/SquawValley.png"   },
+      { id:2, x1:525,  y1:60, x2:525,  y2:390, label: "Squaw Valley (area)/FKU", hidden: false, closeup: null   },
       { id:3, x1:862,  y1:60, x2:862,  y2:291, label: "Bald Mt/FKU",             hidden: false, closeup: "images/closeups/BaldMt.png"        },
       { id:4, x1:1193, y1:60, x2:1193, y2:205, label: "Bear Mt/FKU",             hidden: false, closeup: "images/closeups/bear_mtn_fresno.jpg"},
-      { id:5, x1:1293, y1:60, x2:1293, y2:324, label: "Elwood Rd/FKU",           hidden: true,  closeup: "images/closeups/Elwood.png"      },
+      { id:5, x1:1293, y1:60, x2:1293, y2:324, label: "Elwood Rd/FKU",           hidden: true,  closeup: null      },
       { id:6, x1:1660, y1:60, x2:1660, y2:240, label: "Dalton Mt",               hidden: false, closeup: "images/closeups/Dalton.png"      },
       //{ id:, x1:, y1:, x2:, y2:, label: "", hidden: false, closeup: null },
     ];
@@ -147,7 +147,7 @@
     const NS = 'http://www.w3.org/2000/svg';
 
     let svgW = W, svgH = H;
-    let lines = [], labels = [], tips = [];
+    let lines = [], labels = [], tips = [], icons = [];
     let activeLineId = -1;   // which line body is currently hovered
     let activeTipId  = -1;   // which tip (circle/arrowhead) is currently hovered
     let shownLabels = new Set();
@@ -156,12 +156,19 @@
     const TIP_R      = 9;   // visible open circle radius (px in SVG space)
     const TIP_HIT_R  = 14;  // invisible hit-target radius
 
+    // Closeup badge — small binoculars icon marking tips that have a closeup photo
+    const ICON_SRC    = 'binoculars-icon.svg';
+    const ICON_H      = 18;               // rendered height, in SVG px
+    const ICON_W      = ICON_H * (430 / 369); // native aspect ratio (430x369)
+    const ICON_OFFSET = 22;               // diagonal (up-right) offset from tip center,
+                                           // kept clear of the TIP_HIT_R click target
+
     function sp(frac, dim) { return frac * dim; }
 
     function buildSVG() {
       svg.innerHTML = '';
       svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
-      lines = []; labels = []; tips = [];
+      lines = []; labels = []; tips = []; icons = [];
 
       // Arrowhead marker definitions — one for default (black), one for hover (white)
       const defs = document.createElementNS(NS, 'defs');
@@ -225,6 +232,7 @@
         line.setAttribute('x2', lineX2); line.setAttribute('y2', lineY2);
         line.setAttribute('stroke', 'rgba(0,0,0,0.8)');
         line.setAttribute('stroke-width', '1.5');
+        line.setAttribute('stroke-dasharray', '4,3');
         if (lm.hidden) line.setAttribute('marker-end', 'url(#arrow-dark)');
         line.style.pointerEvents = 'none';
         svg.appendChild(line);
@@ -236,7 +244,7 @@
         hitCircle.setAttribute('cx', x2); hitCircle.setAttribute('cy', y2);
         hitCircle.setAttribute('r', TIP_HIT_R);
         hitCircle.setAttribute('fill', 'transparent');
-        hitCircle.style.cursor = 'pointer';
+        hitCircle.style.cursor = lm.closeup ? 'pointer' : 'default';
         hitCircle.dataset.lid  = lm.id;
         hitCircle.dataset.role = 'tip';
         svg.appendChild(hitCircle);
@@ -256,16 +264,41 @@
         // (Arrow landmarks show their tip via the SVG marker on the line;
         //  the hit-target circle above handles the click area.)
 
+        // ── Closeup badge: binoculars icon flags tips with a closeup photo ──
+        // Acts as an extra hit-target for the same tip — hover/click behave
+        // just like the circle/arrowhead itself.
+        if (lm.closeup) {
+          const icon = document.createElementNS(NS, 'image');
+          icon.setAttribute('href', ICON_SRC);
+          icon.setAttribute('width',  ICON_W);
+          icon.setAttribute('height', ICON_H);
+          icon.setAttribute('x', x2 + ICON_OFFSET - ICON_W / 2);
+          icon.setAttribute('y', y2 - ICON_OFFSET - ICON_H / 2);
+          icon.style.pointerEvents = 'auto';
+          icon.style.cursor = 'pointer';
+          icon.dataset.lid  = lm.id;
+          icon.dataset.role = 'tip';
+          svg.appendChild(icon);
+          icons.push({ id: lm.id, el: icon });
+        }
+
         tips.push({ id: lm.id, x: x2, y: y2, hidden: lm.hidden });
 
-        // ── Label group (hidden until line is clicked) ──
+        // ── Label group ──
+        // Always visible: shown as a dashed outline "placeholder" box until the
+        // line is clicked, then swaps to a filled box with the label text.
+        // The box itself is clickable/hoverable just like the line.
         const labelG = document.createElementNS(NS, 'g');
         labelG.style.pointerEvents = 'none';
-        labelG.style.display = shownLabels.has(lm.id) ? 'block' : 'none';
 
         const bg = document.createElementNS(NS, 'rect');
         bg.setAttribute('rx', '3');
-        bg.setAttribute('fill', 'rgba(0,0,0,0.65)');
+        bg.style.pointerEvents = 'auto';
+        bg.style.cursor = 'pointer';
+        bg.dataset.lid = lm.id;
+        bg.dataset.role = 'label';
+        // Hover/click on this box are handled by onMove/onClick's role check below —
+        // no dedicated listeners needed here.
 
         const text = document.createElementNS(NS, 'text');
         text.setAttribute('x', x1);
@@ -274,17 +307,41 @@
         text.setAttribute('dominant-baseline', 'auto');
         text.setAttribute('font-size', '12');
         text.setAttribute('font-family', 'sans-serif');
-        text.setAttribute('fill', 'white');
         text.setAttribute('font-weight', '500');
         text.textContent = lm.label;
 
         labelG.appendChild(bg);
         labelG.appendChild(text);
         svg.appendChild(labelG);
-        labels.push({ g: labelG, bg, text, id: lm.id });
+        const lb = { bg, text, id: lm.id, revealed: false };
+        labels.push(lb);
+        setLabelRevealed(lb, shownLabels.has(lm.id));
       });
 
       requestAnimationFrame(sizeLabels);
+    }
+
+    // Style a label's box/text as either a dashed "answer pending" placeholder
+    // (solid outline when its line/box is hovered) or the filled, revealed answer.
+    function updateLabelStyle(lb) {
+      if (lb.revealed) {
+        lb.bg.setAttribute('fill', 'rgba(0,0,0,0.65)');
+        lb.bg.setAttribute('stroke', 'none');
+        lb.bg.removeAttribute('stroke-dasharray');
+        lb.text.setAttribute('fill', 'white');
+      } else {
+        const isHovered = activeLineId === lb.id;
+        lb.bg.setAttribute('fill', 'rgba(255,255,255,0.12)');
+        lb.bg.setAttribute('stroke', 'rgba(0,0,0,0.8)');
+        lb.bg.setAttribute('stroke-width', '1.25');
+        lb.bg.setAttribute('stroke-dasharray', isHovered ? 'none' : '4,3');
+        lb.text.setAttribute('fill', 'transparent');
+      }
+    }
+
+    function setLabelRevealed(lb, revealed) {
+      lb.revealed = revealed;
+      updateLabelStyle(lb);
     }
 
     function sizeLabels() {
@@ -321,6 +378,10 @@
           }
         }
       });
+      // Grey the binoculars badge while its tip is hovered
+      icons.forEach(ic => {
+        ic.el.style.filter = ic.id === id ? 'brightness(0.65)' : 'none';
+      });
     }
 
     // ── Line hover: highlight the line, leave tip alone ──────────────────────
@@ -329,14 +390,15 @@
       activeLineId = id;
       lines.forEach(({ line, id: lid, hidden }) => {
         const isActive = lid === id;
-        const strokeColor = isActive ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.8)';
-        line.setAttribute('stroke', strokeColor);
         line.setAttribute('stroke-width', isActive ? '2.5' : '1.5');
+        line.setAttribute('stroke-dasharray', isActive ? 'none' : '4,3');
         // For arrow lines don't touch the marker here — tip hover owns that
         if (!hidden) {
           // Leave the circle stroke alone — tip hover owns it
         }
       });
+      // Keep each label's outline in sync: solid while its line/box is hovered
+      labels.forEach(updateLabelStyle);
     }
 
     function getPos(e) {
@@ -364,9 +426,9 @@
         const x1 = sp(lm._x1f, svgW), y1 = sp(lm._y1f, svgH);
         const x2 = sp(lm._x2f, svgW), y2 = sp(lm._y2f, svgH);
 
-        // Tip proximity (circle around x2,y2)
+        // Tip proximity (circle around x2,y2) — only a hover/click target if a closeup exists
         const tipDist = Math.hypot(mx - x2, my - y2);
-        if (tipDist <= TIP_HIT_R && tipDist < bestTipDist) {
+        if (lm.closeup && tipDist <= TIP_HIT_R && tipDist < bestTipDist) {
           bestTipDist = tipDist; bestTip = lm.id;
         }
 
@@ -382,8 +444,27 @@
       return { lineId: bestLine, tipId: bestTip };
     }
 
+    // A label box or binoculars badge carries data-role/data-lid directly, letting
+    // event handlers short-circuit the line/tip distance check below when the
+    // pointer lands squarely on one of them (they can sit outside TIP_HIT_R).
+    function targetRole(e) {
+      const ds = e.target && e.target.dataset;
+      return ds && ds.role ? { role: ds.role, lid: parseInt(ds.lid, 10) } : null;
+    }
+
     function onMove(e) {
       e.preventDefault();
+      const hit = targetRole(e);
+      if (hit && hit.role === 'label') {
+        setLineActive(hit.lid);
+        setTipActive(-1);
+        return;
+      }
+      if (hit && hit.role === 'tip') {
+        setLineActive(-1);
+        setTipActive(hit.lid);
+        return;
+      }
       const { x, y } = getPos(e);
       const { lineId, tipId } = findTargets(x, y);
       setLineActive(lineId);
@@ -396,7 +477,7 @@
       shownLabels.has(id) ? shownLabels.delete(id) : shownLabels.add(id);
       const lb = labels.find(l => l.id === id);
       if (lb) {
-        lb.g.style.display = shownLabels.has(id) ? 'block' : 'none';
+        setLabelRevealed(lb, shownLabels.has(id));
         requestAnimationFrame(sizeLabels);
       }
     }
@@ -410,6 +491,17 @@
 
     function onClick(e) {
       e.preventDefault();
+      const hit = targetRole(e);
+      // Direct hit on a label box → toggle it, same as clicking its line
+      if (hit && hit.role === 'label') {
+        onLineClick(hit.lid);
+        return;
+      }
+      // Direct hit on the binoculars badge → open the closeup, same as clicking the tip
+      if (hit && hit.role === 'tip') {
+        onTipClick(hit.lid, e.clientX, e.clientY);
+        return;
+      }
       const { x, y } = getPos(e);
       const { lineId, tipId } = findTargets(x, y);
       if (tipId !== -1) {
