@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!-- Replace image in line 86 -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -82,13 +83,7 @@
   <p id="instructions">Hover near a line to highlight it — click to toggle the label. Hover over the circle or arrowhead tip to highlight it — click to view a closeup photo.</p>
 
   <div id="wrapper">
-    <!--
-      OPTION A (current): generated canvas placeholder.
-      OPTION B (your photo): replace the <canvas> with:
-        <img id="landscape" src="your-photo.jpg" alt="Landscape">
-      and remove the drawLandscape() call below.
-    -->
-    <img id="landscape" src="images/DelilahAfternoonWest.jpg" alt="Landscape">
+    <img id="landscape" src="images/DelilahMorningWest.jpg" alt="Landscape">
     <svg id="overlay" xmlns="http://www.w3.org/2000/svg"></svg>
   </div>
 
@@ -122,12 +117,12 @@
     //           click the circle or arrowhead tip to open the closeup in a modal overlay
     //           set to null (no quotes) to disable the closeup for a landmark
     const landmarks = [
-      { id:1, x1:230,  y1:60, x2:230,  y2:375, label: "Dude Ridge/SQF",          hidden: false, closeup: "images/closeups/DudeRidge.png"    },
+      { id:1, x1:230,  y1:60, x2:230,  y2:395, label: "Dude Ridge/SQF",          hidden: false, closeup: "images/closeups/DudeRidge.png"    },
       { id:2, x1:525,  y1:60, x2:525,  y2:390, label: "Squaw Valley (area)/FKU", hidden: false, closeup: "images/closeups/SquawValley.png"   },
-      { id:3, x1:862,  y1:60, x2:862,  y2:286, label: "Bald Mt/FKU",             hidden: false, closeup: "images/closeups/BaldMt.png"        },
-      { id:4, x1:1200, y1:60, x2:1200, y2:200, label: "Bear Mt/FKU",             hidden: false, closeup: "images/closeups/bear_mtn_fresno.jpg"},
+      { id:3, x1:862,  y1:60, x2:862,  y2:291, label: "Bald Mt/FKU",             hidden: false, closeup: "images/closeups/BaldMt.png"        },
+      { id:4, x1:1193, y1:60, x2:1193, y2:205, label: "Bear Mt/FKU",             hidden: false, closeup: "images/closeups/bear_mtn_fresno.jpg"},
       { id:5, x1:1293, y1:60, x2:1293, y2:324, label: "Elwood Rd/FKU",           hidden: true,  closeup: "images/closeups/Elwood.png"      },
-      { id:6, x1:1660, y1:60, x2:1660, y2:245, label: "Dalton Mt",               hidden: false, closeup: "images/closeups/Dalton.png"      },
+      { id:6, x1:1660, y1:60, x2:1660, y2:240, label: "Dalton Mt",               hidden: false, closeup: "images/closeups/Dalton.png"      },
       //{ id:, x1:, y1:, x2:, y2:, label: "", hidden: false, closeup: null },
     ];
 
