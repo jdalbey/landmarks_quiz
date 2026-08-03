@@ -12,7 +12,40 @@
     #instructions { font-size: 13px; color: #666; margin-bottom: 10px; line-height: 1.6; }
     #wrapper { position: relative; display: inline-block; width: 100%; user-select: none; }
     #landscape { display: block; width: 100%; height: auto; }
-    #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: crosshair; }
+    /* Default OS pointers vary by platform/theme and can be hard to see against
+       a dark photo; this custom cursor is always a white arrow with a black
+       outline, so it stays visible regardless of background. */
+    #overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M3,2 L3,19 L7.5,15 L10.5,21.5 L13.5,20 L10.3,13.7 L16,13.7 Z' fill='white' stroke='black' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") 3 2, auto;
+    }
+
+    /* ── Panorama photo navigation ───────────────────────────────────────── */
+    /* Fixed to the viewport (not #wrapper) so the arrows stay put vertically
+       when switching between photos of different heights/aspect ratios. */
+    .nav-arrow {
+      position: fixed;
+      top: 50vh;
+      transform: translateY(-50%);
+      z-index: 10;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(0,0,0,0.45);
+      color: #fff;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .nav-arrow:hover { background: rgba(0,0,0,0.7); }
+    /* 28px = body's 1rem padding (16px) + the original 12px inset, so the
+       arrows land in the same spot they did when positioned within #wrapper. */
+    #nav-prev { left: 28px; }
+    #nav-next { right: 28px; }
 
     /* ── Modal overlay ───────────────────────────────────────────────────── */
     #modal-backdrop {
@@ -80,11 +113,15 @@
 <body>
 
   <h1>Learn Your Territory</h1>
-  <p id="instructions">Hover near a line to highlight it — click to toggle the label. Hover over the circle or arrowhead tip to highlight it — click to view a closeup photo.</p>
+  <p id="instructions">Click a box to reveal the name of the feature. Click again to hide it. Click the binoculars icon to view a closeup photo. Click the ‹ › arrows to move between photos. 
+<button id="fsBtn" type="button" onclick="toggleFullscreen()">View Fullscreen</button>
+</p>
 
   <div id="wrapper">
-    <img id="landscape" src="images/DelilahMorningWest.jpg" alt="Landscape">
+    <img id="landscape" alt="Landscape">
     <svg id="overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+    <button id="nav-prev" class="nav-arrow" aria-label="Previous photo">&#10094;</button>
+    <button id="nav-next" class="nav-arrow" aria-label="Next photo">&#10095;</button>
   </div>
 
   <!-- ── Closeup modal ─────────────────────────────────────────────────── -->
@@ -95,66 +132,81 @@
     </div>
   </div>
 
+  <script src="panoramas-data.js"></script>
   <script>
     // -------------------------------------------------------------------------
-    // CONFIGURATION — edit these values to match your photo and landmarks
+    // Panorama/photo state — landmark and photo data comes from PANORAMAS,
+    // defined in panoramas-data.js (loaded above).
     // -------------------------------------------------------------------------
+    const ACTIVE_PANORAMA = 'Delilah'; // only one panorama exists so far; a combo
+                                        // box to choose between panoramas comes later
+    const photos = PANORAMAS[ACTIVE_PANORAMA].photos;
 
-    // Native pixel dimensions of your photograph
-    const IMAGE_NATIVE_WIDTH  = 1711;
-    const IMAGE_NATIVE_HEIGHT = 752;
-
-    // Landmark data. All coordinates are in native image pixels, exactly as
-    // reported by your image editor (Photoshop, GIMP, Preview, etc.).
-    //
-    // x1, y1  — top end of the line (undecorated, label appears above here)
-    // x2, y2  — bottom end of the line (dot or arrow, points to the land feature)
-    // label   — name displayed when the user clicks the line
-    // hidden  — true  → land feature is not directly visible (canyon, valley, etc.)
-    //                    tip is drawn as an arrowhead
-    //           false → land feature is visible; tip is drawn as a filled dot
-    // closeup — path to a closeup photo of this landmark (relative to this HTML file)
-    //           click the circle or arrowhead tip to open the closeup in a modal overlay
-    //           set to null (no quotes) to disable the closeup for a landmark
-    const landmarks = [
-      { id:1, x1:230,  y1:60, x2:230,  y2:395, label: "Dude Ridge/SQF",          hidden: false, closeup: "images/closeups/DudeRidge.png"    },
-      { id:2, x1:525,  y1:60, x2:525,  y2:390, label: "Squaw Valley (area)/FKU", hidden: false, closeup: null   },
-      { id:3, x1:862,  y1:60, x2:862,  y2:291, label: "Bald Mt/FKU",             hidden: false, closeup: "images/closeups/BaldMt.png"        },
-      { id:4, x1:1193, y1:60, x2:1193, y2:205, label: "Bear Mt/FKU",             hidden: false, closeup: "images/closeups/bear_mtn_fresno.jpg"},
-      { id:5, x1:1293, y1:60, x2:1293, y2:324, label: "Elwood Rd/FKU",           hidden: true,  closeup: null      },
-      { id:6, x1:1660, y1:60, x2:1660, y2:240, label: "Dalton Mt",               hidden: false, closeup: "images/closeups/Dalton.png"      },
-      //{ id:, x1:, y1:, x2:, y2:, label: "", hidden: false, closeup: null },
-    ];
+    let photoIndex = 0;
+    // Set by loadPhoto() below for whichever photo is currently active.
+    let landmarks, IMAGE_NATIVE_WIDTH, IMAGE_NATIVE_HEIGHT, W, H;
 
     // Pixel distance from the pointer within which a line is considered hovered
     const HOVER_DIST = 12;
 
     // -------------------------------------------------------------------------
-    // Pre-compute fractional coordinates for responsive scaling
-    // -------------------------------------------------------------------------
-    landmarks.forEach(lm => {
-      lm._x1f = lm.x1 / IMAGE_NATIVE_WIDTH;
-      lm._y1f = lm.y1 / IMAGE_NATIVE_HEIGHT;
-      lm._x2f = lm.x2 / IMAGE_NATIVE_WIDTH;
-      lm._y2f = lm.y2 / IMAGE_NATIVE_HEIGHT;
-    });
-
-    const W = IMAGE_NATIVE_WIDTH, H = IMAGE_NATIVE_HEIGHT;
-    // -------------------------------------------------------------------------
     // SVG overlay — interaction logic
     // -------------------------------------------------------------------------
-    const svg = document.getElementById('overlay');
-    const NS = 'http://www.w3.org/2000/svg';
+    /*
+  SVG text is used here rather than an HTML overlay for a few concrete reasons
+  tied to how this app is built:
 
-    let svgW = W, svgH = H;
+  1. Same coordinate system as the lines/tips. The whole annotation layer
+  (lines, circles/ellipses, arrowheads, labels) is one <svg> with a viewBox
+  sized to the photo (svgW/svgH), and landmark coordinates are stored as
+  fractions of the native image (_x1f, _y1f, etc., scaled via sp()). Because the
+  label's <text> lives in that same SVG, positioning it at x1, y1 uses the
+  exact same coordinate math as the line and tip — no separate CSS
+  positioning/z-index scheme to keep in sync with a resizing image.
+  2. Automatic, responsive scaling. Since the SVG uses a viewBox, everything in
+  it — lines, tip outlines, and text — scales together as the browser window
+  resizes or the image is displayed at different sizes. An HTML <div> overlay
+  would need its own resize-observer logic to reposition/rescale labels in step
+  with the image.
+  3. Precise self-sizing background boxes. sizeLabels() calls lb.text.getBBox()
+  to measure the rendered text and size the dashed/filled <rect> behind it
+  (Learn-your-territory.html:381-392). getBBox() is an SVG-only API that gives
+  pixel-accurate bounds of the text (now spanning multiple <tspan>s too), which
+  is what lets each label's box hug its text tightly regardless of label length.
+  4. Unified hit-testing/event model. Labels, lines, and tips all rely on
+  dataset.role/dataset.lid attributes read by the same onMove/onClick handlers
+  attached to the svg element. Keeping the label as an SVG element (the bg rect)
+  lets it participate in that single event-delegation system instead of needing
+  separate DOM event wiring for an HTML overlay.
+
+  In short: the labels are just another annotation layer alongside the lines and
+  tip markers, so keeping them in SVG means one coordinate system, one scaling
+  mechanism, and one hit-testing model for the whole diagram.
+    */
+    const svg     = document.getElementById('overlay');
+    const NS      = 'http://www.w3.org/2000/svg';
+    const img     = document.getElementById('landscape');
+    const navPrev = document.getElementById('nav-prev');
+    const navNext = document.getElementById('nav-next');
+
+    let svgW = 0, svgH = 0;
     let lines = [], labels = [], tips = [], icons = [];
     let activeLineId = -1;   // which line body is currently hovered
-    let activeTipId  = -1;   // which tip (circle/arrowhead) is currently hovered
+    let activeTipId  = -1;   // which tip (circle/ellipse/arrowhead) is currently hovered
     let shownLabels = new Set();
 
-    // Radius of the open circle tip and the invisible hit-target for arrowheads
+    // Radius of the open circle/ellipse tips and the invisible hit-target for all tip shapes
     const TIP_R      = 9;   // visible open circle radius (px in SVG space)
     const TIP_HIT_R  = 14;  // invisible hit-target radius
+    const LABEL_LINE_HEIGHT = 14; // px between stacked lines in a multi-line label
+
+    // Per-target-type outline dimensions for the non-arrow tip shapes, all drawn as
+    // an SVG <ellipse> (a circle is just an ellipse with rx === ry). To add a new
+    // outline shape, add an entry here — no other rendering code needs to change.
+    const TIP_SHAPES = {
+      circle:  { rx: TIP_R,       ry: TIP_R },
+      ellipse: { rx: TIP_R * 1.6, ry: TIP_R * 0.75 },
+    };
 
     // Closeup badge — small binoculars icon marking tips that have a closeup photo
     const ICON_SRC    = 'binoculars-icon.svg';
@@ -164,6 +216,51 @@
                                            // kept clear of the TIP_HIT_R click target
 
     function sp(frac, dim) { return frac * dim; }
+
+    // "images/Pano_Delilah_2.JPG" → "Pano_Delilah_2" — strips path and extension
+    function photoBasename(src) {
+      return src.split('/').pop().replace(/\.[^.]+$/, '');
+    }
+
+    // Loads the photo at `index` (wrapping around the list) into the active
+    // landmarks/image state and swaps the <img> src. buildSVG() runs once the
+    // new image has finished loading (see the 'load' listener near the bottom).
+    function loadPhoto(index) {
+      photoIndex = ((index % photos.length) + photos.length) % photos.length;
+      const photo = photos[photoIndex];
+
+      IMAGE_NATIVE_WIDTH  = photo.width;
+      IMAGE_NATIVE_HEIGHT = photo.height;
+      W = IMAGE_NATIVE_WIDTH;
+      H = IMAGE_NATIVE_HEIGHT;
+
+      landmarks = photo.landmarks;
+      landmarks.forEach(lm => {
+        lm._x1f = lm.x1 / W; lm._y1f = lm.y1 / H;
+        lm._x2f = lm.x2 / W; lm._y2f = lm.y2 / H;
+      });
+
+      shownLabels = new Set();
+      updateArrowVisibility();
+      updateArrowTooltips();
+      img.src = photo.src;
+    }
+
+    // Hide the nav arrows entirely when there's only one photo to show.
+    function updateArrowVisibility() {
+      const show = photos.length > 1;
+      navPrev.style.display = show ? 'flex' : 'none';
+      navNext.style.display = show ? 'flex' : 'none';
+    }
+
+    // Dev-facing hint: hovering an arrow shows the filename (no path/extension)
+    // of the photo it would navigate to — most users won't notice or need this.
+    function updateArrowTooltips() {
+      const prevPhoto = photos[(photoIndex - 1 + photos.length) % photos.length];
+      const nextPhoto = photos[(photoIndex + 1) % photos.length];
+      navPrev.title = photoBasename(prevPhoto.src);
+      navNext.title = photoBasename(nextPhoto.src);
+    }
 
     function buildSVG() {
       svg.innerHTML = '';
@@ -193,6 +290,12 @@
       defs.appendChild(makeMarker('arrow-light', 'rgba(255,255,255,0.95)'));
       svg.appendChild(defs);
 
+      // Labels are collected here and appended to the svg as a group after the
+      // main loop below, so every label paints above every line/tip regardless
+      // of landmark order — otherwise a later landmark's line could be drawn on
+      // top of an earlier landmark's label box and obscure its text.
+      const labelsLayer = document.createElementNS(NS, 'g');
+
       landmarks.forEach(lm => {
         const x1 = sp(lm._x1f, svgW), y1 = sp(lm._y1f, svgH);
         const x2 = sp(lm._x2f, svgW), y2 = sp(lm._y2f, svgH);
@@ -216,14 +319,17 @@
 
         // ── Visible annotation line ──
         // Inset the far endpoint so the line stops cleanly at the tip symbol:
-        //   • visible landmark → stop at the circle circumference (inset by TIP_R)
-        //   • hidden landmark  → line runs to x2,y2; arrowhead base is anchored
-        //                        there via refX="0" on the SVG marker
+        //   • circle/ellipse target → stop at the outline (inset by its vertical
+        //                              radius — lines in this app run straight down)
+        //   • arrow target          → line runs to x2,y2; arrowhead base is anchored
+        //                              there via refX="0" on the SVG marker
         const segLen = Math.hypot(x2 - x1, y2 - y1);
         const ux = segLen > 0 ? (x2 - x1) / segLen : 0;
         const uy = segLen > 0 ? (y2 - y1) / segLen : 0;
 
-        const inset = lm.hidden ? 0 : TIP_R;
+        const isArrow = lm.target === 'arrow';
+        const shape = TIP_SHAPES[lm.target] || TIP_SHAPES.circle;
+        const inset = isArrow ? 0 : shape.ry;
         const lineX2 = x2 - ux * inset;
         const lineY2 = y2 - uy * inset;
 
@@ -233,33 +339,36 @@
         line.setAttribute('stroke', 'rgba(0,0,0,0.8)');
         line.setAttribute('stroke-width', '1.5');
         line.setAttribute('stroke-dasharray', '4,3');
-        if (lm.hidden) line.setAttribute('marker-end', 'url(#arrow-dark)');
+        if (isArrow) line.setAttribute('marker-end', 'url(#arrow-dark)');
         line.style.pointerEvents = 'none';
         svg.appendChild(line);
-        lines.push({ line, id: lm.id, hidden: lm.hidden });
+        lines.push({ line, id: lm.id });
 
-        // ── Tip: open circle (visible) or arrowhead (hidden) ──
-        // Both get an invisible circular hit-target centred on x2,y2.
+        // ── Tip: open circle/ellipse outline, or arrowhead ──
+        // Both get an invisible circular hit-target centred on x2,y2, but it
+        // only acts as a 'tip' role (hover highlight + click-to-open) when a
+        // closeup exists — otherwise the pointer falls through to line hover.
         const hitCircle = document.createElementNS(NS, 'circle');
         hitCircle.setAttribute('cx', x2); hitCircle.setAttribute('cy', y2);
         hitCircle.setAttribute('r', TIP_HIT_R);
         hitCircle.setAttribute('fill', 'transparent');
         hitCircle.style.cursor = lm.closeup ? 'pointer' : 'default';
         hitCircle.dataset.lid  = lm.id;
-        hitCircle.dataset.role = 'tip';
+        if (lm.closeup) hitCircle.dataset.role = 'tip';
         svg.appendChild(hitCircle);
 
-        if (!lm.hidden) {
-          // Open circle tip for visible landmarks
-          const circle = document.createElementNS(NS, 'circle');
-          circle.setAttribute('cx', x2); circle.setAttribute('cy', y2);
-          circle.setAttribute('r',  TIP_R);
-          circle.setAttribute('fill',         'none');
-          circle.setAttribute('stroke',       'rgba(0,0,0,0.8)');
-          circle.setAttribute('stroke-width', '1.5');
-          circle.dataset.tip = lm.id;
-          circle.style.pointerEvents = 'none';
-          svg.appendChild(circle);
+        if (!isArrow) {
+          // Open outline tip (circle or ellipse, per lm.target)
+          const outline = document.createElementNS(NS, 'ellipse');
+          outline.setAttribute('cx', x2); outline.setAttribute('cy', y2);
+          outline.setAttribute('rx', shape.rx);
+          outline.setAttribute('ry', shape.ry);
+          outline.setAttribute('fill',         'none');
+          outline.setAttribute('stroke',       'rgba(0,0,0,0.8)');
+          outline.setAttribute('stroke-width', '1.5');
+          outline.dataset.tip = lm.id;
+          outline.style.pointerEvents = 'none';
+          svg.appendChild(outline);
         }
         // (Arrow landmarks show their tip via the SVG marker on the line;
         //  the hit-target circle above handles the click area.)
@@ -282,7 +391,7 @@
           icons.push({ id: lm.id, el: icon });
         }
 
-        tips.push({ id: lm.id, x: x2, y: y2, hidden: lm.hidden });
+        tips.push({ id: lm.id, x: x2, y: y2, target: lm.target });
 
         // ── Label group ──
         // Always visible: shown as a dashed outline "placeholder" box until the
@@ -300,23 +409,36 @@
         // Hover/click on this box are handled by onMove/onClick's role check below —
         // no dedicated listeners needed here.
 
+        // A '\n' in lm.label starts a new line. SVG <text> ignores literal
+        // newlines, so each line becomes its own <tspan>, stacked upward so
+        // the bottom line still sits just above the line's top point (y1-6).
         const text = document.createElementNS(NS, 'text');
         text.setAttribute('x', x1);
-        text.setAttribute('y', y1 - 6);
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'auto');
         text.setAttribute('font-size', '12');
         text.setAttribute('font-family', 'sans-serif');
         text.setAttribute('font-weight', '500');
-        text.textContent = lm.label;
+
+        const labelLines = lm.label.split('\n');
+        const startY = y1 - 6 - (labelLines.length - 1) * LABEL_LINE_HEIGHT;
+        labelLines.forEach((line, i) => {
+          const tspan = document.createElementNS(NS, 'tspan');
+          tspan.setAttribute('x', x1);
+          tspan.setAttribute('y', startY + i * LABEL_LINE_HEIGHT);
+          tspan.textContent = line;
+          text.appendChild(tspan);
+        });
 
         labelG.appendChild(bg);
         labelG.appendChild(text);
-        svg.appendChild(labelG);
+        labelsLayer.appendChild(labelG);
         const lb = { bg, text, id: lm.id, revealed: false };
         labels.push(lb);
         setLabelRevealed(lb, shownLabels.has(lm.id));
       });
+
+      svg.appendChild(labelsLayer);
 
       requestAnimationFrame(sizeLabels);
     }
@@ -357,17 +479,17 @@
       });
     }
 
-    // ── Tip hover: highlight the circle/arrowhead, leave line alone ──────────
+    // ── Tip hover: highlight the outline/arrowhead, leave line alone ─────────
     function setTipActive(id) {
       if (activeTipId === id) return;
       activeTipId = id;
       tips.forEach(tip => {
         const isActive = tip.id === id;
-        if (!tip.hidden) {
-          const circle = svg.querySelector(`circle[data-tip="${tip.id}"]`);
-          if (circle) {
-            circle.setAttribute('stroke', isActive ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.8)');
-            circle.setAttribute('stroke-width', isActive ? '2.5' : '1.5');
+        if (tip.target !== 'arrow') {
+          const outline = svg.querySelector(`ellipse[data-tip="${tip.id}"]`);
+          if (outline) {
+            outline.setAttribute('stroke', isActive ? 'rgba(255,255,255,0.95)' : 'rgba(0,0,0,0.8)');
+            outline.setAttribute('stroke-width', isActive ? '2.5' : '1.5');
           }
         } else {
           // For arrowhead tips, swap the marker colour on the line
@@ -378,9 +500,9 @@
           }
         }
       });
-      // Grey the binoculars badge while its tip is hovered
+      // Turn the binoculars badge white while its tip is hovered, matching the target
       icons.forEach(ic => {
-        ic.el.style.filter = ic.id === id ? 'brightness(0.65)' : 'none';
+        ic.el.style.filter = ic.id === id ? 'brightness(0) invert(1)' : 'none';
       });
     }
 
@@ -388,14 +510,11 @@
     function setLineActive(id) {
       if (activeLineId === id) return;
       activeLineId = id;
-      lines.forEach(({ line, id: lid, hidden }) => {
+      lines.forEach(({ line, id: lid }) => {
         const isActive = lid === id;
         line.setAttribute('stroke-width', isActive ? '2.5' : '1.5');
         line.setAttribute('stroke-dasharray', isActive ? 'none' : '4,3');
-        // For arrow lines don't touch the marker here — tip hover owns that
-        if (!hidden) {
-          // Leave the circle stroke alone — tip hover owns it
-        }
+        // Tip shape/marker color is owned by tip hover, not line hover
       });
       // Keep each label's outline in sync: solid while its line/box is hovered
       labels.forEach(updateLabelStyle);
@@ -517,6 +636,34 @@
       svgH = rect.height || H;
     }
 
+
+  function toggleFullscreen() {
+    const btn = document.getElementById('fsBtn');
+    const inFs = !!document.fullscreenElement;
+    const elem = document.documentElement; 
+    if (!inFs) {
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) { // Safari
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { // old IE
+        elem.msRequestFullscreen();
+      }
+      btn.textContent = "Exit Fullscreen";
+    } else {
+      document.exitFullscreen?.() ||
+      document.webkitExitFullscreen?.() ||
+      document.msExitFullscreen?.();
+      btn.textContent = "View Fullscreen";
+    }
+  }
+
+  // Keep the label correct even if fullscreen is exited via Esc or browser UI
+  document.addEventListener('fullscreenchange', () => {
+    const btn = document.getElementById('fsBtn');
+    btn.textContent = document.fullscreenElement ? "Exit Fullscreen" : "View Fullscreen";
+  });
+
     // -------------------------------------------------------------------------
     // Modal closeup — open / close
     // -------------------------------------------------------------------------
@@ -566,12 +713,15 @@
     svg.addEventListener('touchstart', onClick,  { passive: false });
     window.addEventListener('resize',  () => { getRealSize(); shownLabels = new Set(); buildSVG(); });
 
-    // Build the SVG once the photo has loaded and the browser knows its
-    // rendered dimensions. If the image is already cached and 'load' has
-    // already fired, call buildSVG() immediately.
-    const img = document.getElementById('landscape');
-    function init() { getRealSize(); buildSVG(); }
-    if (img.complete) { init(); } else { img.addEventListener('load', init); }
+    navPrev.addEventListener('click', () => loadPhoto(photoIndex - 1));
+    navNext.addEventListener('click', () => loadPhoto(photoIndex + 1));
+
+    // Rebuild the SVG overlay each time a (new or re-selected) photo finishes
+    // loading, once the browser knows its rendered dimensions. Since loadPhoto()
+    // always assigns img.src via JS, 'load' is guaranteed to fire after this
+    // listener is attached — no img.complete race to special-case.
+    img.addEventListener('load', () => { getRealSize(); buildSVG(); });
+    loadPhoto(0);
   </script>
 </body>
 </html>
