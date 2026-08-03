@@ -798,10 +798,11 @@
       idle(() => {
         const others = [];
         photos.forEach((photo, i) => { if (i !== photoIndex) others.push(i); });
-        if (others.length === 0) return;
 
         let loadedCount = 1; // the first photo is already showing
-        preloadStatus.textContent = `Loading photos… ${loadedCount} of ${photos.length}`;
+        if (others.length > 0) {
+          preloadStatus.textContent = `Loading photos… ${loadedCount} of ${photos.length}`;
+        }
 
         // Preload one photo at a time rather than firing every request at once.
         // With all 15 in flight together they saturate the browser's connection
@@ -811,7 +812,7 @@
         // one background request active, leaving connections free for nav.
         const queue = others.slice();
         function preloadNext() {
-          if (queue.length === 0) return;
+          if (queue.length === 0) { preloadCloseups(); return; }
           const i = queue.shift();
           if (loadedPhotos[i]) { preloadNext(); return; } // already loaded via a nav in the meantime
           const pre = new Image();
@@ -829,6 +830,32 @@
           pre.addEventListener('error', onSettled);
           pre.src = photos[i].src;
         }
+
+        // Closeup photos (opened via the binoculars badge) are lower priority
+        // than the main nav photos, so they're only preloaded once all 16
+        // photos are cached — same chained, low-priority approach, just
+        // keyed by src instead of photo index since closeups aren't part of
+        // the `photos` array. No visible counter: these are opt-in clicks,
+        // not something the user pages through, so "unresponsive nav" isn't
+        // a concern the way it is for photos.
+        function preloadCloseups() {
+          const srcs = new Set();
+          photos.forEach(photo => {
+            photo.landmarks.forEach(lm => { if (lm.closeup) srcs.add(lm.closeup); });
+          });
+          const closeupQueue = Array.from(srcs);
+          function preloadNextCloseup() {
+            if (closeupQueue.length === 0) return;
+            const src = closeupQueue.shift();
+            const pre = new Image();
+            pre.fetchPriority = 'low';
+            pre.addEventListener('load',  preloadNextCloseup);
+            pre.addEventListener('error', preloadNextCloseup);
+            pre.src = src;
+          }
+          preloadNextCloseup();
+        }
+
         preloadNext();
       });
     });
