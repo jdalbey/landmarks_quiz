@@ -20,6 +20,35 @@
       cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M3,2 L3,19 L7.5,15 L10.5,21.5 L13.5,20 L10.3,13.7 L16,13.7 Z' fill='white' stroke='black' stroke-width='1.6' stroke-linejoin='round'/%3E%3C/svg%3E") 3 2, auto;
     }
 
+    /* ── Loading feedback ────────────────────────────────────────────────── */
+    #preload-status {
+      font-size: 12px; color: #888; margin-bottom: 6px;
+      min-height: 1em; transition: opacity 0.4s ease;
+    }
+
+    /* Shown over the photo when the user navigates to one that hasn't finished
+       loading yet, so the app doesn't appear frozen while the browser waits
+       on the network. pointer-events: auto so clicks land here instead of on
+       the stale photo/labels underneath. */
+    #loading-overlay {
+      display: none;
+      position: absolute; inset: 0;
+      z-index: 6;
+      background: rgba(0,0,0,0.35);
+      align-items: center; justify-content: center;
+      flex-direction: column; gap: 10px;
+      color: #fff; font-size: 14px;
+    }
+    #loading-overlay.visible { display: flex; }
+    #loading-spinner {
+      width: 34px; height: 34px;
+      border: 4px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
     /* ── Panorama photo navigation ───────────────────────────────────────── */
     /* Fixed to the viewport (not #wrapper) so the arrows stay put vertically
        when switching between photos of different heights/aspect ratios. */
@@ -116,10 +145,15 @@
   <p id="instructions">Click a box to reveal the name of the feature. Click again to hide it. Click the binoculars icon to view a closeup photo. Click the ‹ › arrows to move between photos. 
 <button id="fsBtn" type="button" onclick="toggleFullscreen()">View Fullscreen</button>
 </p>
+  <p id="preload-status"></p>
 
   <div id="wrapper">
     <img id="landscape" alt="Landscape">
     <svg id="overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="loading-overlay">
+      <div id="loading-spinner"></div>
+      <div id="loading-text"></div>
+    </div>
     <button id="nav-prev" class="nav-arrow" aria-label="Previous photo">&#10094;</button>
     <button id="nav-next" class="nav-arrow" aria-label="Next photo">&#10095;</button>
   </div>
@@ -145,6 +179,22 @@
     let photoIndex = 0;
     // Set by loadPhoto() below for whichever photo is currently active.
     let landmarks, IMAGE_NATIVE_WIDTH, IMAGE_NATIVE_HEIGHT, W, H;
+
+    // Tracks which photos have already finished loading (shown or preloaded in
+    // the background), so nav only shows the loading overlay when it's actually
+    // going to have to wait on the network.
+    const loadedPhotos = new Array(photos.length).fill(false);
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingText    = document.getElementById('loading-text');
+    const preloadStatus  = document.getElementById('preload-status');
+
+    function showLoadingOverlay() {
+      loadingText.textContent = `Loading photo ${photoIndex + 1} of ${photos.length}…`;
+      loadingOverlay.classList.add('visible');
+    }
+    function hideLoadingOverlay() {
+      loadingOverlay.classList.remove('visible');
+    }
 
     // Pixel distance from the pointer within which a line is considered hovered
     const HOVER_DIST = 12;
@@ -243,6 +293,12 @@
       shownLabels = new Set();
       updateArrowVisibility();
       updateArrowTooltips();
+
+      if (loadedPhotos[photoIndex]) {
+        hideLoadingOverlay();
+      } else {
+        showLoadingOverlay();
+      }
       img.src = photo.src;
     }
 
@@ -720,7 +776,16 @@
     // loading, once the browser knows its rendered dimensions. Since loadPhoto()
     // always assigns img.src via JS, 'load' is guaranteed to fire after this
     // listener is attached — no img.complete race to special-case.
-    img.addEventListener('load', () => { getRealSize(); buildSVG(); });
+    img.addEventListener('load', () => {
+      loadedPhotos[photoIndex] = true;
+      hideLoadingOverlay();
+      getRealSize();
+      buildSVG();
+    });
+    // If the network fails, don't leave the spinner running forever — surface it.
+    img.addEventListener('error', () => {
+      loadingText.textContent = `Photo ${photoIndex + 1} of ${photos.length} failed to load.`;
+    });
     loadPhoto(0);
 
     // Once the first photo is up, quietly fetch the rest in the background
@@ -731,9 +796,26 @@
       img.removeEventListener('load', preloadRest);
       const idle = window.requestIdleCallback || (fn => setTimeout(fn, 200));
       idle(() => {
-        photos.forEach((photo, i) => {
-          if (i === photoIndex) return;
-          new Image().src = photo.src;
+        const others = [];
+        photos.forEach((photo, i) => { if (i !== photoIndex) others.push(i); });
+        if (others.length === 0) return;
+
+        let loadedCount = 1; // the first photo is already showing
+        preloadStatus.textContent = `Loading photos… ${loadedCount} of ${photos.length}`;
+
+        others.forEach(i => {
+          const pre = new Image();
+          const onSettled = () => {
+            loadedPhotos[i] = true;
+            loadedCount++;
+            preloadStatus.textContent = `Loading photos… ${loadedCount} of ${photos.length}`;
+            if (loadedCount === photos.length) {
+              setTimeout(() => { preloadStatus.textContent = ''; }, 600);
+            }
+          };
+          pre.addEventListener('load', onSettled);
+          pre.addEventListener('error', onSettled);
+          pre.src = photos[i].src;
         });
       });
     });
