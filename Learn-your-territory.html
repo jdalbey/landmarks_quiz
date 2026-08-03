@@ -722,6 +722,21 @@
     // listener is attached — no img.complete race to special-case.
     img.addEventListener('load', () => { getRealSize(); buildSVG(); });
     loadPhoto(0);
+
+    // Once the first photo is up, quietly fetch the rest in the background
+    // (via a detached Image, never attached to the DOM) so they're already
+    // in the browser cache by the time the user navigates to them. Runs once,
+    // during idle time, so it doesn't compete with rendering the first photo.
+    img.addEventListener('load', function preloadRest() {
+      img.removeEventListener('load', preloadRest);
+      const idle = window.requestIdleCallback || (fn => setTimeout(fn, 200));
+      idle(() => {
+        photos.forEach((photo, i) => {
+          if (i === photoIndex) return;
+          new Image().src = photo.src;
+        });
+      });
+    });
   </script>
 </body>
 </html>
