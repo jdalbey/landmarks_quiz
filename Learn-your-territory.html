@@ -803,8 +803,19 @@
         let loadedCount = 1; // the first photo is already showing
         preloadStatus.textContent = `Loading photos… ${loadedCount} of ${photos.length}`;
 
-        others.forEach(i => {
+        // Preload one photo at a time rather than firing every request at once.
+        // With all 15 in flight together they saturate the browser's connection
+        // pool, so a real on-demand nav (loadPhoto -> img.src) has to queue
+        // behind them instead of starting immediately — the exact "frozen
+        // spinner" symptom this feature exists to avoid. Chaining keeps only
+        // one background request active, leaving connections free for nav.
+        const queue = others.slice();
+        function preloadNext() {
+          if (queue.length === 0) return;
+          const i = queue.shift();
+          if (loadedPhotos[i]) { preloadNext(); return; } // already loaded via a nav in the meantime
           const pre = new Image();
+          pre.fetchPriority = 'low'; // hint: yield to the visible photo's fetch
           const onSettled = () => {
             loadedPhotos[i] = true;
             loadedCount++;
@@ -812,11 +823,13 @@
             if (loadedCount === photos.length) {
               setTimeout(() => { preloadStatus.textContent = ''; }, 600);
             }
+            preloadNext();
           };
           pre.addEventListener('load', onSettled);
           pre.addEventListener('error', onSettled);
           pre.src = photos[i].src;
-        });
+        }
+        preloadNext();
       });
     });
   </script>
