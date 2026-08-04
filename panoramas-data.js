@@ -103,7 +103,7 @@ const PANORAMAS = {
       {
          src: "images/Landmarks_Delilah11.png", width: 1920, height: 1265,
          landmarks: [
-            { id:1, x1:1621, y1:60, x2:1621, y2:1192, label: "Samson Flat (SQF)", target: "ellipse", closeup: null },
+            { id:1, x1:1621, y1:60, x2:1621, y2:1192, label: "Sampson Flat (SQF)", target: "ellipse", closeup: null },
             { id:2, x1:1380, y1:60, x2:1380, y2:461, label: "Mill Creek (SQF)", target: "arrow", closeup: null },
             { id:3, x1:883, y1:60, x2:883, y2:181, label: "McGee Overlook (SQF)", target: "circle", closeup: "images/mcgee_overlook.jpg" },
  ]
