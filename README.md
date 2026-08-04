@@ -5,6 +5,8 @@ Fire lookout staff need to be able to recognize landmarks in the landscape and r
 Visit the [online demo](https://jdalbey.github.io/landmarks_quiz/).
 
 #### Status ####
+2026.08.03  ["Learn your territory"](https://jdalbey.github.io/landmarks_quiz/Learn-your-territory.html) app available.  
+
 2026.04.17  38 Delilah photos added with answer, need azimuth/distance.
 
 2025.07.21-a  Initial Release with example photographs.
