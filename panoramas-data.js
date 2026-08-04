@@ -29,38 +29,38 @@ const PANORAMAS = {
          src: "images/Landmarks_Delilah1.png", width: 1920, height: 968,
          landmarks: [
           { id:1, x1:1037,  y1:60, x2:1037,  y2:428, label: "Squaw Valley (FKU)", target: "ellipse", closeup: null   },
-          { id:2, x1:1432,  y1:60, x2:1432,  y2:314, label: "Bald Mt (FKU)",             target: "circle", closeup: null  },
-          { id:3, x1:1844, y1:60, x2:1844, y2:219, label: "Bear Mt (FKU)",             target: "circle", closeup: "images/closeups/bear_mtn_fresno.jpg"},
+          { id:2, x1:1432,  y1:60, x2:1432,  y2:314, label: "Bald Mtn (FKU)",             target: "circle", closeup: null  },
+          { id:3, x1:1844, y1:60, x2:1844, y2:219, label: "Bear Mtn (FKU)",             target: "circle", closeup: "images/closeups/bear_mtn_fresno.jpg"},
  ]
       },
       {
          src: "images/Landmarks_Delilah2.png", width: 1920, height: 892,
          landmarks: [          
-            { id:1, x1:504, y1:60, x2:504, y2:255, label: "Dalton Mt (FKU)",               target: "circle", closeup: null   },
+            { id:1, x1:504, y1:60, x2:504, y2:255, label: "Dalton Mtn (FKU)",               target: "circle", closeup: null   },
             { id:2, x1:1470, y1:60, x2:1470, y2:427, label: "Wonder Valley (FKU)", target: "ellipse", closeup: "images/wonder_valley.png" },
-            { id:3, x1:1736, y1:60, x2:1736, y2:223, label: "Tivy Mountain (FKU)", target: "circle", closeup: null } 
+            { id:3, x1:1736, y1:60, x2:1736, y2:223, label: "Tivy Mtn (FKU)", target: "circle", closeup: null } 
  ]
       },
       {
          src: "images/Landmarks_Delilah3.png", width: 1920, height: 870,
          landmarks: [
-            { id:1, x1:844, y1:60, x2:844, y2:296, label: "Hughes Mountain (FKU)", target: "circle", closeup: null },
+            { id:1, x1:844, y1:60, x2:844, y2:296, label: "Hughes Mtn (FKU)", target: "circle", closeup: null },
             { id:2, x1:1509, y1:60, x2:1509, y2:423, label: "Island Park - West (FKU)", target: "circle", closeup: null },
-            { id:3, x1:1705, y1:60, x2:1705, y2:439, label: "Lakeview Rec Area\nSierra", target: "circle", closeup: "images/boat_dock.png" }, 
+            { id:3, x1:1705, y1:60, x2:1705, y2:439, label: "Lakeview Rec Area\n(SNF)", target: "circle", closeup: "images/boat_dock.png" }, 
  ]
       },
       {
          src: "images/Landmarks_Delilah4.png", width: 1920, height: 921,
          landmarks: [
-            { id:1, x1:169, y1:60, x2:169, y2:244, label: "Hog Mountain ()", target: "circle", closeup: null },
-            { id:2, x1:962, y1:60, x2:962, y2:278, label: "Oat Mountain (FKU)", target: "circle", closeup: null },
+            { id:1, x1:169, y1:60, x2:169, y2:244, label: "Hog Mtn (SNF)", target: "circle", closeup: null },
+            { id:2, x1:962, y1:60, x2:962, y2:278, label: "Oat Mtn (SQF)", target: "circle", closeup: null },
 ]
       },
       {
          src: "images/Landmarks_Delilah5.png", width: 1920, height: 1008,
          landmarks: [
             { id:1, x1:944, y1:60, x2:944, y2:372, label: "Secata Ridge (SNF)", target: "circle", closeup: null },
-            { id:2, x1:1091, y1:60, x2:1091, y2:621, label: "White Deer Saddle ()", target: "circle", closeup: null },
+            { id:2, x1:1091, y1:60, x2:1091, y2:621, label: "White Deer Saddle (FKU)", target: "circle", closeup: null },
  ]
       },
       {
@@ -82,7 +82,7 @@ const PANORAMAS = {
          src: "images/Landmarks_Delilah8.png", width: 1920, height: 1344,
          landmarks: [
             { id:1, x1:194, y1:60, x2:194, y2:1318, label: "Kings River (SNF)", target: "circle", closeup: null },
-            { id:2, x1:437, y1:60, x2:437, y2:788, label: "Bear Wallow (SNF)", target: "circle", closeup: null },
+            { id:2, x1:437, y1:60, x2:437, y2:788, label: "Bear Wallow (SNF)", target: "ellipse", closeup: null },
             { id:3, x1:1848, y1:60, x2:1848, y2:191, label: "Finger Rock (SNF)", target: "circle", closeup: "images/finger_rock.jpg" },
  ]
       },
@@ -96,30 +96,30 @@ const PANORAMAS = {
       {
          src: "images/Landmarks_Delilah10.png", width: 1920, height: 1042,
          landmarks: [
-            { id:1, x1:1280, y1:60, x2:1280, y2:136, label: "Converse Mtn ()", target: "circle", closeup: null },
+            { id:1, x1:1280, y1:60, x2:1280, y2:136, label: "Converse Mtn (SQF)", target: "circle", closeup: null },
             { id:2, x1:1500, y1:60, x2:1500, y2:990, label: "Sampson Crk (SQF)", target: "arrow", closeup: null },
  ]
       },
       {
          src: "images/Landmarks_Delilah11.png", width: 1920, height: 1265,
          landmarks: [
-            { id:1, x1:1621, y1:60, x2:1621, y2:1192, label: "Samson Flat (SQF)", target: "circle", closeup: null },
+            { id:1, x1:1621, y1:60, x2:1621, y2:1192, label: "Samson Flat (SQF)", target: "ellipse", closeup: null },
             { id:2, x1:1380, y1:60, x2:1380, y2:461, label: "Mill Creek (SQF)", target: "arrow", closeup: null },
-            { id:3, x1:883, y1:60, x2:883, y2:181, label: "McGee Overlook ()", target: "circle", closeup: "images/mcgee_overlook.jpg" },
+            { id:3, x1:883, y1:60, x2:883, y2:181, label: "McGee Overlook (SQF)", target: "circle", closeup: "images/mcgee_overlook.jpg" },
  ]
       },
       {
          src: "images/Landmarks_Delilah12.png", width: 1920, height: 984,
          landmarks: [
-            { id:1, x1:620, y1:60, x2:620, y2:213, label: "Big Baldy ()", target: "circle", closeup: null },
-            { id:2, x1:1503, y1:200, x2:1503, y2:324, label: "Logger Pt ()", target: "circle", closeup: null },
+            { id:1, x1:620, y1:60, x2:620, y2:213, label: "Big Baldy (KNP)", target: "circle", closeup: null },
+            { id:2, x1:1503, y1:200, x2:1503, y2:324, label: "Logger Pt (SQF)", target: "circle", closeup: null },
  ]
       },
       {
          src: "images/Landmarks_Delilah13.png", width: 1920, height: 1008,
          landmarks: [
-            { id:1, x1:965, y1:250, x2:965, y2:410, label: "Shadequarter Mtn ()", target: "circle", closeup: null },
-            { id:2, x1:1338, y1:270, x2:1338, y2:535, label: "Sequoia Highlands Camp ()", target: "circle", closeup: "images/sequoia_highlands_cabin.png" },
+            { id:1, x1:965, y1:250, x2:965, y2:410, label: "Shadequarter Mtn (TUU)", target: "circle", closeup: null },
+            { id:2, x1:1338, y1:270, x2:1338, y2:535, label: "Sequoia Highlands Camp (FKU)", target: "circle", closeup: "images/sequoia_highlands_cabin.png" },
  ]
       },
       {
@@ -131,13 +131,13 @@ const PANORAMAS = {
       {
          src: "images/Landmarks_Delilah15.png", width: 1920, height: 1006,
          landmarks: [
-            { id:1, x1:726, y1:120, x2:726, y2:708, label: "Delilah Rd ()", target: "circle", closeup: null },
+            { id:1, x1:726, y1:120, x2:726, y2:708, label: "Delilah Rd (SQF)", target: "circle", closeup: null },
  ]
       },
       {
          src: "images/Landmarks_Delilah16.png", width: 1920, height: 1007,
          landmarks: [
-            { id:1, x1:1838, y1:300, x2:1838, y2:585, label: "Reedley ()", target: "circle", closeup: null },
+            { id:1, x1:1838, y1:300, x2:1838, y2:585, label: "Reedley", target: "ellipse", closeup: null },
  ]
       },
 
