@@ -45,7 +45,7 @@ const PANORAMAS = {
          src: "images/Landmarks_Delilah3.png", width: 1920, height: 870,
          landmarks: [
             { id:1, x1:844, y1:60, x2:844, y2:296, label: "Hughes Mtn (FKU)", target: "circle", closeup: null },
-            { id:2, x1:1509, y1:60, x2:1509, y2:423, label: "Island Park - West (FKU)", target: "circle", closeup: null },
+            { id:2, x1:1509, y1:100, x2:1509, y2:423, label: "Island Park - West (FKU)", target: "circle", closeup: null },
             { id:3, x1:1705, y1:60, x2:1705, y2:439, label: "Lakeview Rec Area\n(SNF)", target: "circle", closeup: "images/boat_dock.png" }, 
  ]
       },
@@ -60,7 +60,7 @@ const PANORAMAS = {
          src: "images/Landmarks_Delilah5.png", width: 1920, height: 1008,
          landmarks: [
             { id:1, x1:944, y1:60, x2:944, y2:372, label: "Secata Ridge (SNF)", target: "circle", closeup: null },
-            { id:2, x1:1091, y1:60, x2:1091, y2:621, label: "White Deer Saddle (FKU)", target: "circle", closeup: null },
+            { id:2, x1:1091, y1:110, x2:1091, y2:621, label: "White Deer Saddle (FKU)", target: "circle", closeup: null },
  ]
       },
       {
@@ -73,9 +73,9 @@ const PANORAMAS = {
       {
          src: "images/Landmarks_Delilah7.png", width: 1920, height: 1014,
          landmarks: [
-            { id:1, x1:861, y1:60, x2:861, y2:369, label: "Patterson Bluffs (SNF)", target: "circle", closeup: null },
+            { id:1, x1:861, y1:110, x2:861, y2:369, label: "Patterson Bluffs (SNF)", target: "circle", closeup: null },
             { id:2, x1:1028, y1:60, x2:1028, y2:151, label: "Nelson Mtn (SNF)", target: "circle", closeup: null },
-            { id:3, x1:1218, y1:60, x2:1218, y2:555, label: "Penstocks (SNF)", target: "circle", closeup: "images/closeups/penstocks.jpg" },
+            { id:3, x1:1218, y1:110, x2:1218, y2:555, label: "Penstocks (SNF)", target: "circle", closeup: "images/closeups/penstocks.jpg" },
  ]
       },
       {
