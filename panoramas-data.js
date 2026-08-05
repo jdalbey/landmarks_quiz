@@ -42,10 +42,18 @@ const PANORAMAS = {
       {
          src: "images/Landmarks_Delilah2.png", width: 1920, height: 892,
          landmarks: [          
-            { id:1, x1:504, y1:60, x2:504, y2:255, label: "Dalton Mtn (FKU)",               target: "circle", closeup: null   },
+            { id:1, x1:504, y1:100, x2:504, y2:255, label: "Dalton Mtn (FKU)",               target: "circle", closeup: null   },
             { id:2, x1:1470, y1:60, x2:1470, y2:427, label: "Wonder Valley (FKU)", target: "ellipse", closeup: "images/wonder_valley.png" },
             { id:3, x1:1736, y1:60, x2:1736, y2:223, label: "Tivy Mtn (FKU)", target: "circle", closeup: null }, 
-          { id:8, x1:200, y1:60, x2:200, y2:300, label: "Elwood Rd", target: "arrow", closeup: null},
+          { id:4, x1:186, y1:60, x2:186, y2:345, label: "Elwood Rd (FKU)", target: "arrow", closeup: null},
+          { id:5, x1:490, y1:60, x2:490, y2:216, label: "Jess Morrow Mtn (FKU)", target: "circle", closeup: null},
+          { id:6, x1:1305,  y1:60, x2:1305, y2:288, label: "Harmon Pk (FKU)", target: "circle", closeup: null},
+          { id:7, x1:890,  y1:60, x2:882, y2:278, label: "Piedra silo", target: "circle", closeup: "images/piedra_silo.png"},
+          { id:8, x1:800,  y1:100, x2:838, y2:294, label: "white fence ranch (FKU)", target: "circle", closeup: "images/white_fence_ranch.png"},
+          { id:9, x1:1414,  y1:100, x2:1414, y2:570, label: "Mill Crk (FKU)", target: "circle", closeup: null},
+          { id:10, x1:1880, y1:50, x2:1880, y2:241, label: "Shaw Ave", target: "circle", closeup: null},
+
+
  ]
       },
       {
