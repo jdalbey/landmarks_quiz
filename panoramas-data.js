@@ -22,15 +22,21 @@
 //       closeup — path to a closeup photo of this landmark, or null to disable
 const PANORAMAS = {
   "Delilah": {
+    // Each photo has its own set of landmarks. Don't forget to add photo width/height.
     photos: [
-      // Add more photos here as they become available — each one gets its own
-      // width/height and landmarks[], e.g.:
       {
          src: "images/Landmarks_Delilah1.png", width: 1920, height: 968,
          landmarks: [
-          { id:1, x1:1037,  y1:60, x2:1037,  y2:428, label: "Squaw Valley (FKU)", target: "ellipse", closeup: null   },
-          { id:2, x1:1432,  y1:60, x2:1432,  y2:314, label: "Bald Mtn (FKU)",             target: "circle", closeup: null  },
+          { id:1, x1:1000, y1:60, x2:1000,  y2:428, label: "Squaw Valley (FKU)", target: "ellipse", closeup: null   },
+          { id:2, x1:1432,  y1:100, x2:1432,  y2:314, label: "Bald Mtn (FKU)",             target: "circle", closeup: null  },
           { id:3, x1:1844, y1:60, x2:1844, y2:219, label: "Bear Mtn (FKU)",             target: "circle", closeup: "images/closeups/bear_mtn_fresno.jpg"},
+          { id:4, x1:555, y1:100, x2:721, y2:407, label: "Dude Ridge (SQF)", target: "circle", closeup: null},
+          { id:4, x1:555, y1:100, x2:322, y2:321, label: "Dude Ridge (SQF)", target: "circle", closeup: null},
+          { id:5, x1:1222, y1:100, x2:1222, y2:409, label: "Silver Tank/Dollar General (FKU)", target: "circle", closeup: "images/silver_tank.png"},
+          { id:6, x1:1336, y1:60, x2:1336, y2:305, label: "Granite Hill (FKU)", target: "circle", closeup: null},
+          { id:7, x1:1699, y1:100, x2:1799, y2:749, label: "Hopewell Rd (FKU)", target: "arrow", closeup: null},
+          { id:8, x1:719, y1:60, x2:719, y2:300, label: "4 radio towers", target: "circle", closeup: "images/four_radio_towers.jpg"},
+
  ]
       },
       {
@@ -38,7 +44,8 @@ const PANORAMAS = {
          landmarks: [          
             { id:1, x1:504, y1:60, x2:504, y2:255, label: "Dalton Mtn (FKU)",               target: "circle", closeup: null   },
             { id:2, x1:1470, y1:60, x2:1470, y2:427, label: "Wonder Valley (FKU)", target: "ellipse", closeup: "images/wonder_valley.png" },
-            { id:3, x1:1736, y1:60, x2:1736, y2:223, label: "Tivy Mtn (FKU)", target: "circle", closeup: null } 
+            { id:3, x1:1736, y1:60, x2:1736, y2:223, label: "Tivy Mtn (FKU)", target: "circle", closeup: null }, 
+          { id:8, x1:200, y1:60, x2:200, y2:300, label: "Elwood Rd", target: "arrow", closeup: null},
  ]
       },
       {
