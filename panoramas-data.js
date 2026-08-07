@@ -49,7 +49,7 @@ const PANORAMAS = {
           { id:5, x1:490, y1:60, x2:490, y2:216, label: "Jess Morrow Mtn (FKU)", target: "circle", closeup: null},
           { id:6, x1:1305,  y1:60, x2:1305, y2:288, label: "Harmon Pk (FKU)", target: "circle", closeup: null},
           { id:7, x1:890,  y1:60, x2:882, y2:278, label: "Piedra silo", target: "circle", closeup: "images/piedra_silo.png"},
-          { id:8, x1:800,  y1:100, x2:838, y2:294, label: "white fence ranch (FKU)", target: "circle", closeup: "images/white_fence_ranch.png"},
+          { id:8, x1:800,  y1:100, x2:838, y2:294, label: "Caglia ranch (FKU)", target: "circle", closeup: "images/white_fence_ranch.png"},
           { id:9, x1:1414,  y1:100, x2:1414, y2:570, label: "Mill Crk (FKU)", target: "circle", closeup: null},
           { id:10, x1:1880, y1:50, x2:1880, y2:241, label: "Shaw Ave", target: "circle", closeup: null},
 
@@ -59,9 +59,24 @@ const PANORAMAS = {
       {
          src: "images/Landmarks_Delilah3.png", width: 1920, height: 870,
          landmarks: [
-            { id:1, x1:844, y1:60, x2:844, y2:296, label: "Hughes Mtn (FKU)", target: "circle", closeup: null },
-            { id:2, x1:1509, y1:100, x2:1509, y2:423, label: "Island Park - West (FKU)", target: "circle", closeup: null },
-            { id:3, x1:1705, y1:60, x2:1705, y2:439, label: "Lakeview Rec Area\n(SNF)", target: "circle", closeup: "images/boat_dock.png" }, 
+            { id:1, x1:335, y1:120, x2:335, y2:507, label: "Luckett Mtn", target: "circle", closeup: null},
+            { id:2, x1:405, y1:60, x2:405, y2:405, label: "Flat above and \nWest of Zebe Creek\n(FKU)", target: "circle", closeup: null},
+            { id:3, x1:600, y1:150, x2:600, y2:525, label: "Rancheria Crk (FKU)", target: "arrow", closeup: null},
+            { id:4, x1:658, y1:110, x2:658, y2:470, label: "Sycamore Crk (FKU)", target: "arrow", closeup: null},
+            { id:5, x1:671, y1:60, x2:671, y2:375, label: "Pine Flat Dam (FKU)", target: "arrow", closeup: null},
+            { id:6, x1:844, y1:60, x2:844, y2:296, label: "Hughes Mtn (FKU)", target: "circle", closeup: null },
+            { id:7, x1:1021, y1:100, x2:1021, y2:362, label: "Pk 2672?\nT13S R25E Sec 4 NW1/4 (FKU)", target: "circle", closeup: null},
+            { id:8, x1:1067, y1:60, x2:1067, y2:253, label: "Red Mtn (FKU)", target: "circle", closeup: null},
+            { id:9, x1:1406, y1:140, x2:1406, y2:425, label: "Pine Flat Lake (FKU)", target: "circle", closeup: null},
+            { id:10, x1:1509, y1:170, x2:1509, y2:423, label: "Island Park - West (FKU)", target: "circle", closeup: null },
+            { id:11, x1:1705, y1:150, x2:1705, y2:439, label: "Lakeview Rec Area\n(SNF)", target: "circle", closeup: "images/boat_dock.png" },
+            { id:12, x1:1185, y1:60, x2:1185, y2:364, label: "Pk 2122?", target: "circle", closeup: null},
+            { id:13, x1:1245, y1:30, x2:1245, y2:215, label: "Owens Mtn", target: "circle", closeup: null},
+            { id:14, x1:1335, y1:60, x2:1335, y2:244, label: "Wildcat Mtn (FKU)", target: "circle", closeup: null},
+            { id:15, x1:1356, y1:100, x2:1356, y2:337, label: "Hughes Crk (FKU)", target: "circle", closeup: null},
+            { id:16, x1:1579, y1:60, x2:1579, y2:315, label: "Granite Ridge (FKU)", target: "circle", closeup: null},
+            { id:17, x1:1646, y1:100, x2:1646, y2:350, label: "Deer Crk (FKU)", target: "circle", closeup: null},
+ 
  ]
       },
       {
