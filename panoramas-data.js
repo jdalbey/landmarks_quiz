@@ -76,7 +76,8 @@ const PANORAMAS = {
             { id:15, x1:1356, y1:100, x2:1356, y2:337, label: "Hughes Crk (FKU)", target: "circle", closeup: null},
             { id:16, x1:1579, y1:60, x2:1579, y2:315, label: "Granite Ridge (FKU)", target: "circle", closeup: null},
             { id:17, x1:1646, y1:100, x2:1646, y2:350, label: "Deer Crk (FKU)", target: "circle", closeup: null},
- 
+            { id:18, x1:813, y1:160, x2:813, y2:857, label: "Hopewell Rd? (FKU)", target: "circle", closeup: null},
+            { id:19, x1:1140, y1:140, x2:1140, y2:690, label: "White Deer Crk? (FKU)", target: "circle", closeup: null},
  ]
       },
       {
