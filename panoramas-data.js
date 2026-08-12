@@ -216,16 +216,35 @@ const PANORAMAS = {
       {
          src: "images/Landmarks_Delilah11.png", width: 1920, height: 1265,
          landmarks: [
-            { id:1, x1:1621, y1:60, x2:1621, y2:1192, label: "Sampson Flat (SQF)", target: "ellipse", closeup: null },
-            { id:2, x1:1380, y1:60, x2:1380, y2:455, label: "Mill Flat Crk (SQF)", target: "arrow", closeup: null },
+            { id:4, x1:708, y1:60, x2:708, y2:153, label: "Cherry Gap (SQF)", target: "arrow", closeup: null },
+            { id:1, x1:1621, y1:100, x2:1621, y2:1192, label: "Sampson Flat (SQF)", target: "ellipse", closeup: null },
+            { id:2, x1:1310, y1:60, x2:1310, y2:465, label: "Mill Flat Crk (SQF)", target: "arrow", closeup: null },
             { id:3, x1:883, y1:60, x2:883, y2:181, label: "McGee Overlook (SQF)", target: "circle", closeup: "images/mcgee_overlook.jpg" },
+            { id:5, x1:1068, y1:60, x2:1068, y2:736, label: "McKenzie Ridge (SQF)", target: "circle", closeup: null },
+            { id:6, x1:1413, y1:100, x2:1413, y2:324, label: "Abbot Crk (SQF)", target: "arrow", closeup: null },
+            { id:7, x1:1552, y1:60, x2:1552, y2:135, label: "Park Ridge (KNP)", target: "circle", closeup: null },
+            { id:8, x1:1765, y1:60, x2:1765, y2:167, label: "Manzanita patch (KNP)", target: "circle", closeup: null },
+            { id:9, x1:830, y1:100, x2:858, y2:568, label: "Goodmill (SQF)", target: "arrow", closeup: null },
  ]
       },
       {
          src: "images/Landmarks_Delilah12.png", width: 1920, height: 984,
          landmarks: [
-            { id:1, x1:620, y1:60, x2:620, y2:213, label: "Big Baldy (KNP)", target: "circle", closeup: null },
-            { id:2, x1:1503, y1:200, x2:1503, y2:324, label: "Logger Pt (SQF)", target: "circle", closeup: null },
+            { id:1, x1:55, y1:60, x2:55, y2:253, label: "Grant Grove (KNP)", target: "ellipse", closeup: null },
+            { id:2, x1:220, y1:60, x2:220, y2:192, label: "Park Ridge LO (KNP)", target: "circle", closeup: null },
+            { id:3, x1:303, y1:100, x2:303, y2:416, label: "McKenzie Ridge (SQF)", target: "circle", closeup: null },
+            { id:4, x1:452, y1:60, x2:452, y2:243, label: "Millwood (approx) (SQF)", target: "arrow", closeup: null },
+            { id:5, x1:620, y1:60, x2:620, y2:213, label: "Big Baldy (KNP)", target: "circle", closeup: null },
+            { id:6, x1:879, y1:60, x2:879, y2:255, label: "Redwood Mt (KNP)", target: "circle", closeup: null },
+            { id:7, x1:1062, y1:60, x2:1062, y2:261, label: "Mineral King (SNP)", target: "ellipse", closeup: null },
+            { id:8, x1:1241, y1:100, x2:1241, y2:364, label: "Hwy 180 below 245", target: "circle", closeup: "images/closeups/hwy180_roadcut.jpg" },
+            { id:9, x1:1503, y1:200, x2:1503, y2:324, label: "Logger Pt (SQF)", target: "circle", closeup: null },
+            { id:10, x1:1450, y1:100, x2:1450, y2:525, label: "Davis Y (SQF)", target: "circle", closeup: "images/closeups/davis_jct.jpg" },
+            { id:11, x1:1784, y1:100, x2:1784, y2:377, label: "Eshom Pt (SQF)", target: "circle", closeup: null },
+            { id:12, x1:1864, y1:200, x2:1864, y2:755, label: "Davis Rd (SQF)", target: "circle", closeup: null },
+            { id:13, x1:1696, y1:140, x2:1696, y2:414, label: "Pinehurst (SQF)", target: "ellipse", closeup: null },
+            { id:14, x1:1732, y1:240, x2:1732, y2:674, label: "Fox Spring (SQF)", target: "circle", closeup: null },
+
  ]
       },
       {
