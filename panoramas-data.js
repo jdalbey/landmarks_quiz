@@ -60,7 +60,7 @@ const PANORAMAS = {
       {
          src: "images/Landmarks_Delilah3.png", width: 1920, height: 870,
          landmarks: [
-            { id:1, x1:335, y1:120, x2:335, y2:507, label: "Luckett Mtn", target: "circle", closeup: null},
+            { id:1, x1:335, y1:120, x2:335, y2:507, label: "Luckett Mtn (FKU)", target: "circle", closeup: null},
             { id:2, x1:405, y1:60, x2:405, y2:405, label: "Flat above and \nWest of Zebe Creek\n(FKU)", target: "circle", closeup: null},
             { id:3, x1:600, y1:150, x2:600, y2:525, label: "Rancheria Crk (FKU)", target: "arrow", closeup: null},
             { id:4, x1:658, y1:110, x2:658, y2:470, label: "Sycamore Crk (FKU)", target: "arrow", closeup: null},
@@ -238,7 +238,7 @@ const PANORAMAS = {
             { id:5, x1:620, y1:60, x2:620, y2:213, label: "Big Baldy (KNP)", target: "circle", closeup: null },
             { id:6, x1:879, y1:60, x2:879, y2:255, label: "Redwood Mt (KNP)", target: "circle", closeup: null },
             { id:7, x1:1062, y1:60, x2:1062, y2:261, label: "Mineral King (SNP)", target: "ellipse", closeup: null },
-            { id:8, x1:1241, y1:100, x2:1241, y2:364, label: "Hwy 180 below 245", target: "circle", closeup: "images/closeups/hwy180_roadcut.jpg" },
+            { id:8, x1:1241, y1:100, x2:1241, y2:364, label: "Hwy 180 below 245 (SQF)", target: "circle", closeup: "images/closeups/hwy180_roadcut.jpg" },
             { id:9, x1:1503, y1:200, x2:1503, y2:324, label: "Logger Pt (SQF)", target: "circle", closeup: null },
             { id:10, x1:1450, y1:100, x2:1450, y2:525, label: "Davis Y (SQF)", target: "circle", closeup: "images/closeups/davis_jct.jpg" },
             { id:11, x1:1784, y1:100, x2:1784, y2:377, label: "Eshom Pt (SQF)", target: "circle", closeup: null },
@@ -277,7 +277,6 @@ const PANORAMAS = {
          landmarks: [
             { id:1, x1:165, y1:360, x2:165, y2:552, label: "Bear Mtn (TUU)", target: "circle", closeup: null },
             { id:2, x1:1110, y1:300, x2:1110, y2:510, label: "Pine Ridge (SQF?)", target: "circle", closeup: null },
-
  ]
       },
       {
