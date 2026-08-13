@@ -44,7 +44,7 @@ const PANORAMAS = {
          src: "images/Landmarks_Delilah2.png", width: 1920, height: 892,
          landmarks: [          
             { id:1, x1:504, y1:100, x2:504, y2:255, label: "Dalton Mtn (FKU)",               target: "circle", closeup: null   },
-            { id:2, x1:1470, y1:60, x2:1470, y2:427, label: "Wonder Valley (FKU)", target: "ellipse", closeup: "images/wonder_valley.png" },
+            { id:2, x1:1470, y1:60, x2:1470, y2:427, label: "Wonder Valley (FKU)", target: "ellipse", closeup: "images/closeups/wonder_valley.png" },
             { id:3, x1:1736, y1:60, x2:1736, y2:223, label: "Tivy Mtn (FKU)", target: "circle", closeup: null }, 
           { id:4, x1:186, y1:60, x2:186, y2:345, label: "Elwood Rd (FKU)", target: "arrow", closeup: null},
           { id:5, x1:490, y1:60, x2:490, y2:216, label: "Jess Morrow Mtn (FKU)", target: "circle", closeup: null},
