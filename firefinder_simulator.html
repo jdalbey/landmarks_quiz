@@ -74,6 +74,18 @@
     font-family: monospace;
   }
 
+  #photo { width: 100%; height: auto; display: block; }
+
+  #smoke-overlay {
+    position: absolute;
+    pointer-events: none;
+    /* left/top/width set by JS from scenario.smoke's xPos/yPos/widthPx
+       (native photo pixel coords); xPos/yPos mark the base of the plume,
+       so the image is anchored by its bottom-center regardless of its
+       rendered height. */
+    transform: translate(-50%, -100%);
+  }
+
   #prev-btn, #next-btn { font-size: 2em; padding: 12px 8px; }
   #btn-expand {
     background: #f5f0e8;
@@ -280,19 +292,13 @@
           <td>
             <label for="lookout-sel">Lookout</label>
             <select id="lookout-sel" name="lookout">
-              <option value="delilah">Delilah</option>
-              <option value="buck_rock">Buck Rock</option>
-              <option value="park_ridge">Park Ridge</option>
+              <!-- options populated from LOOKOUTS (lookouts-data.js) -->
             </select>
             &emsp;
             <label for="scenario-sel">Scenario</label>
             <select id="scenario-sel" name="scenario">
-              <option value=""  >&mdash; select &mdash;</option>
-              <option value="d1">Delilah #1 (Easy)</option>
-              <option value="d2">Delilah #2 (Easy)</option>
-              <option value="d3">Delilah #3 (Medium)</option>
-              <option value="d4">Delilah #4 (Difficult)</option>
-              <option value="random">Random</option>
+              <!-- options populated from SCENARIOS (scenarios-data.js),
+                   filtered to the selected Lookout -->
             </select>
           </td>
           <td align="right">
@@ -325,7 +331,7 @@
     <td>
       <table width="100%" border="1" cellpadding="2" cellspacing="0">
         <tr id="compass-bar" style="display:none;">
-          <td id="left-bearing" style="font-family: monospace;">281&#176;</td>
+          <td id="left-bearing" style="font-family: monospace;"></td>
           <td align="center">
             <!-- compass arrow — rotate arrow-group to match photo bearing -->
             <svg id="compass-svg" xmlns="http://www.w3.org/2000/svg"
@@ -339,7 +345,7 @@
               </g>
             </svg>
           </td>
-          <td id="right-bearing" align="right" style="font-family: monospace;">316&#176;</td>
+          <td id="right-bearing" align="right" style="font-family: monospace;"></td>
         </tr>
         <tr>
           <td colspan="3" align="center">
@@ -352,9 +358,10 @@
             </div>
             <div id="photo-area" style="display:none">
               <img id="photo"
-                   src="Island_smoke.png"
-                   alt="Landscape panorama — Delilah West"
-                   width="900">
+                   src=""
+                   alt="Landscape panorama">
+              <!-- smoke overlay: positioned/sized over photo via JS/CSS from scenario data -->
+              <img id="smoke-overlay" src="" alt="" style="display:none">
               <!-- sight overlay canvas: positioned over photo via JS/CSS -->
               <canvas id="sight-canvas" width="900" height="1"></canvas>
             </div>
@@ -606,14 +613,16 @@
     </div><!-- /report-body -->
   </div><!-- /report-page -->
 
-
+<script src="lookouts-data.js"></script>
+<script src="scenarios-data.js"></script>
 <script>
 'use strict';
 
 // ── Firefinder constants ───────────────────────────────────────────
-const LEFT_AZ  = 281;
-const RIGHT_AZ = 316;
-const AZ_RANGE = RIGHT_AZ - LEFT_AZ;
+// left/right azimuth vary per photo — set by showPhoto() from LOOKOUTS data.
+let LEFT_AZ  = 281;
+let RIGHT_AZ = 316;
+let AZ_RANGE = RIGHT_AZ - LEFT_AZ;
 const VH = 44;   // vernier strip height px
 const BH = 58;   // base plate height px
 const S  = { outerHW:40, innerHW:21, topCap:22, footOut:13, footH:22, cr:10 };
@@ -624,10 +633,17 @@ let sightVisible   = false;
 let sightShownOnce = false;
 let PW = 0, PH = 0;
 
+// ── Scenario/photo state ─────────────────────────────────────────────
+let currentLookout   = null;   // e.g. "Delilah"
+let currentScenario  = null;   // resolved SCENARIOS entry (never the literal "random" id)
+let currentPhotos    = [];     // array of photo objects from LOOKOUTS, in scenario.photoIds order
+let currentPhotoIdx  = 0;
+
 // ── Element references ─────────────────────────────────────────────
 const helpBackdrop = document.getElementById('help-backdrop');
 const reportPage   = document.getElementById('report-page');
 const photoEl      = document.getElementById('photo');
+const smokeOverlayEl = document.getElementById('smoke-overlay');
 const sightCvs     = document.getElementById('sight-canvas');
 const azCvs        = document.getElementById('azimuth-canvas');
 const binoBackdrop  = document.getElementById('modal-backdrop');
@@ -636,30 +652,117 @@ const initialState   = document.getElementById('initial-state');
 const photoArea      = document.getElementById('photo-area');
 const hintRow        = document.getElementById('firefinder-hint-row');
 const compassBar    = document.getElementById('compass-bar');
+const leftBearingEl  = document.getElementById('left-bearing');
+const rightBearingEl = document.getElementById('right-bearing');
+const prevBtn        = document.getElementById('prev-btn');
+const nextBtn        = document.getElementById('next-btn');
+const lookoutSel     = document.getElementById('lookout-sel');
+const scenarioSel    = document.getElementById('scenario-sel');
 const actionButtons = ['btn-binoculars','btn-firefinder','btn-map','btn-report','prev-btn','next-btn']
                         .map(id => document.getElementById(id));
 
+// ── Dropdown population (LOOKOUTS / SCENARIOS come from the data files) ──
+function populateLookoutSelect() {
+  lookoutSel.innerHTML = '';
+  Object.keys(LOOKOUTS).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    lookoutSel.appendChild(opt);
+  });
+}
+
+function scenariosForLookout(lookoutName) {
+  return Object.keys(SCENARIOS).filter(id => SCENARIOS[id].lookout === lookoutName);
+}
+
+function populateScenarioSelect(lookoutName) {
+  scenarioSel.innerHTML = '';
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = '— select —';
+  scenarioSel.appendChild(placeholder);
+
+  const ids = scenariosForLookout(lookoutName);
+  ids.forEach(id => {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = SCENARIOS[id].label;
+    scenarioSel.appendChild(opt);
+  });
+
+  if (ids.length) {
+    const randomOpt = document.createElement('option');
+    randomOpt.value = 'random';
+    randomOpt.textContent = 'Random';
+    scenarioSel.appendChild(randomOpt);
+  }
+}
+
+function pickRandomScenario(lookoutName) {
+  const ids = scenariosForLookout(lookoutName);
+  return ids[Math.floor(Math.random() * ids.length)];
+}
+
+function resetToInitialState() {
+  initialState.style.display = '';
+  photoArea.style.display    = 'none';
+  compassBar.style.display   = 'none';
+  actionButtons.forEach(btn => btn.disabled = true);
+  currentScenario = null;
+  currentPhotos   = [];
+}
+
+populateLookoutSelect();
+currentLookout = lookoutSel.value;
+populateScenarioSelect(currentLookout);
+
+lookoutSel.addEventListener('change', () => {
+  currentLookout = lookoutSel.value;
+  populateScenarioSelect(currentLookout);
+  resetToInitialState();
+});
+
 // ── Scenario activation ────────────────────────────────────────────
-function activateScenario() {
+function activateScenario(scenarioId) {
+  let resolvedId = scenarioId;
+  if (resolvedId === 'random') {
+    resolvedId = pickRandomScenario(currentLookout);
+  }
+  const scenario = SCENARIOS[resolvedId];
+  if (!scenario) { return; }
+  currentScenario = scenario;
+
+  const lookoutPhotos = LOOKOUTS[currentLookout].photos;
+  currentPhotos = scenario.photoIds
+    .map(id => lookoutPhotos.find(p => p.id === id))
+    .filter(Boolean);
+
+  if (!currentPhotos.length) {
+    console.warn('Scenario "' + resolvedId + '" has no matching photos in LOOKOUTS["' + currentLookout + '"].');
+    return;
+  }
+
   initialState.style.display = 'none';
   photoArea.style.display    = '';
   actionButtons.forEach(btn => btn.disabled = false);
   compassBar.style.display   = '';
-  requestAnimationFrame(initFirefinder);
+
+  showPhoto(0);
 }
 
-document.getElementById('scenario-sel').addEventListener('change', () => {
-  if (document.getElementById('scenario-sel').value) {
-    activateScenario();
+scenarioSel.addEventListener('change', () => {
+  if (scenarioSel.value) {
+    activateScenario(scenarioSel.value);
   }
 });
 
 // --- Prev/Next Photo buttons
   document.getElementById('prev-btn').addEventListener('click', () => {
-    alert('When implemented, this will show the previous photo.');
+    if (currentPhotoIdx > 0) { showPhoto(currentPhotoIdx - 1); }
   });
   document.getElementById('next-btn').addEventListener('click', () => {
-    alert('When implemented, this will show the next photo.');
+    if (currentPhotoIdx < currentPhotos.length - 1) { showPhoto(currentPhotoIdx + 1); }
   });
 // ── Help modal ─────────────────────────────────────────────────────
 document.getElementById('help-btn').addEventListener('click', () =>
@@ -685,6 +788,35 @@ document.getElementById('btn-report').addEventListener('click', () => {
 });
 document.getElementById('report-close').addEventListener('click', closeReport);
 
+// ── Photo/scenario rendering ─────────────────────────────────────────
+function showPhoto(idx) {
+  const photo = currentPhotos[idx];
+  if (!photo) return;
+  currentPhotoIdx = idx;
+
+  photoEl.src = photo.src;
+  photoEl.alt = 'Landscape panorama — ' + (currentLookout || '') + ' (' + photo.id + ')';
+
+  if (photo.left_azimuth == null || photo.right_azimuth == null) {
+    console.warn('Photo "' + photo.id + '" has no azimuth range set in lookouts-data.js; firefinder readings will not be meaningful.');
+    LEFT_AZ  = 0;
+    RIGHT_AZ = 1;
+  } else {
+    LEFT_AZ  = photo.left_azimuth;
+    RIGHT_AZ = photo.right_azimuth;
+  }
+  AZ_RANGE = RIGHT_AZ - LEFT_AZ;
+
+  leftBearingEl.textContent  = LEFT_AZ  + '°';
+  rightBearingEl.textContent = RIGHT_AZ + '°';
+
+  prevBtn.disabled = (idx === 0);
+  nextBtn.disabled = (idx === currentPhotos.length - 1);
+
+  // Photo swap re-triggers the 'load' listener below, which calls
+  // initFirefinder() once the new image has actually rendered.
+}
+
 // ── Firefinder init ────────────────────────────────────────────────
 function initFirefinder() {
   PW = photoEl.offsetWidth;
@@ -700,14 +832,32 @@ function initFirefinder() {
 
   const photoRect  = photoEl.getBoundingClientRect();
   const parentRect = photoEl.parentElement.getBoundingClientRect();
-  sightCvs.style.left = (photoRect.left - parentRect.left) + 'px';
-  sightCvs.style.top  = (photoRect.top  - parentRect.top)  + 'px';
+  const photoLeft  = photoRect.left - parentRect.left;
+  const photoTop   = photoRect.top  - parentRect.top;
+  sightCvs.style.left = photoLeft + 'px';
+  sightCvs.style.top  = photoTop  + 'px';
 
   sightCvs.width  = PW;
   sightCvs.height = PH;
 
   azCvs.width  = PW;
   azCvs.height = VH + BH;
+
+  // Position the smoke overlay (if this scenario has smoke on the current photo).
+  // smoke.xPos/yPos/widthPx are pixel coordinates on the photo's native
+  // resolution (photo.width/height) — divide by that to get an on-screen
+  // fraction, then scale to however large the photo is currently rendered.
+  const photo = currentPhotos[currentPhotoIdx];
+  const smoke = currentScenario && currentScenario.smoke;
+  if (smoke && photo && smoke.photoId === photo.id) {
+    smokeOverlayEl.src   = smoke.overlayImage;
+    smokeOverlayEl.style.left  = (photoLeft + PW * (smoke.xPos / photo.width))  + 'px';
+    smokeOverlayEl.style.top   = (photoTop  + PH * (smoke.yPos / photo.height)) + 'px';
+    smokeOverlayEl.style.width = (PW * (smoke.widthPx / photo.width)) + 'px';
+    smokeOverlayEl.style.display = '';
+  } else {
+    smokeOverlayEl.style.display = 'none';
+  }
 
   render();
 }
@@ -744,7 +894,10 @@ function openBinoculars() {
     (cx / window.innerWidth  * 100).toFixed(2) + '% ' +
     (cy / window.innerHeight * 100).toFixed(2) + '%';
 
-  binoImg.src = 'smoke_circle.png';
+  let closeupSrc = 'smoke_circle.png'; // fallback if the scenario has no smoke/closeup defined
+  const smoke = currentScenario && currentScenario.smoke;
+  if (smoke && smoke.closeupImage) { closeupSrc = smoke.closeupImage; }
+  binoImg.src = closeupSrc;
 
   // Re-trigger the zoom animation
   binoImg.style.animation = 'none';
@@ -957,10 +1110,18 @@ function setFeedback(el, text, correct) {
 function evaluateReport() {
   const classificationFb = document.getElementById('classification-feedback');
 
+  // TODO: only the Classification field is graded so far. currentScenario.answers
+  // (scenarios-data.js) already carries an answer key for the other report
+  // fields — extend this function to check them once those answers are real
+  // survey data rather than placeholders (see the TODO note at the top of
+  // scenarios-data.js).
+  const correctClassification =
+    currentScenario ? currentScenario.answers.classification : 'illegitimate';
+
   const selected = document.querySelector('input[name="classification"]:checked');
   if (!selected) {
     setFeedback(classificationFb, 'This field is required', false);
-  } else if (selected.value === 'illegitimate') {
+  } else if (selected.value === correctClassification) {
     setFeedback(classificationFb, '✔', true);
   } else {
     setFeedback(classificationFb, 'X', false);
@@ -1001,6 +1162,9 @@ document.addEventListener('keydown', e => {
   if (e.key === 'f' || e.key === 'F') { toggleSight(); return; }
 
   if (e.key === 'm' || e.key === 'M') { openMapView(); return; }
+
+  if (e.key === 'PageUp')   { if (currentPhotoIdx > 0) { showPhoto(currentPhotoIdx - 1); } return; }
+  if (e.key === 'PageDown') { if (currentPhotoIdx < currentPhotos.length - 1) { showPhoto(currentPhotoIdx + 1); } return; }
 
   if (e.key === 'r' || e.key === 'R') {
     if (reportPage.classList.contains('open')) { closeReport(); }
