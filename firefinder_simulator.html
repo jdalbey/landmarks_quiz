@@ -4,37 +4,37 @@
 <meta charset="UTF-8">
 <title>Training Screen Layout</title>
 <style>
-  /* ── Dark theme base ────────────────────────────────────────────── */
+  /* ── Light theme base ───────────────────────────────────────────── */
   body {
-    background: #2b2b2b;
-    color: #ecef99;   /* light yellow */
+    background: #f5f0e8;
+    color: #2a2018;
     font-family: Verdana, sans-serif;
   }
 
-  table { border-color: #4a4a4a; }
-  td    { border-color: #4a4a4a; }
+  table { border-color: #c8bda8; }
+  td    { border-color: #c8bda8; }
 
   button {
-    background: #3a3a3a;
-    color: #ecef99;
-    border: 1px solid #c8a84a;    /* gold */
+    background: #e8e2d4;
+    color: #2a2018;
+    border: 1px solid #b8860b;    /* gold */
     font-family: Verdana, sans-serif;
     cursor: pointer;
     padding: 3px 10px;
     border-radius: 4px;
   }
-  button:hover { background: #4a4a4a; }
+  button:hover { background: #d8d0bc; }
 
   select, input[type="text"], input[type="number"] {
-    background: #1e1e1e;
-    color: #ecef99;
-    border: 1px solid #4a4a4a;
+    background: #ffffff;
+    color: #2a2018;
+    border: 1px solid #9a8060;
     border-radius: 4px;
     font-family: sans-serif;
   }
 
-  label { color: #ecef99; }
-  h2    { color: #ecef99; }
+  label { color: #2a2018; }
+  h2    { color: #2a2018; }
 
   button:disabled { opacity: 0.35; cursor: not-allowed; }
 
@@ -59,15 +59,15 @@
   #initial-state p {
     max-width: 480px;
     line-height: 1.9;
-    color: #ecef99; /*a08830;*/
+    color: #5a3010;
     font-size: 0.9em;
   }
 
-  /* ── End dark theme base ─────────────────────────────────────────── */
-  
+  /* ── End light theme base ────────────────────────────────────────── */
+
   kbd {
-    background: #1e1e1e;
-    border: 1px solid #a89848;
+    background: #eee6d8;
+    border: 1px solid #9a8040;
     border-radius: 3px;
     padding: 1px 5px;
     font-size: 0.9em;
@@ -75,17 +75,17 @@
   }
 
   #prev-btn, #next-btn { font-size: 2em; padding: 12px 8px; }
-  #btn-expand { 
-    background: #2b2b2b;
+  #btn-expand {
+    background: #f5f0e8;
     border: none;
     cursor: pointer;
     padding: 1px;
     margin: 2px 2px 2px 2px;
   }
-  
+
   #firefinder-hint {
     font-size: 0.78em;
-    color: #a89848;
+    color: #8a6c1a;
     letter-spacing: 0.04em;
     padding: 4px 0 2px;
   }
@@ -100,7 +100,8 @@
   #help-backdrop.open { display: flex; }
 
   #help-modal {
-    background: #222222; border: 2px solid #ac9b2b;
+    background: #f5f0e8; border: 2px solid #b8860b;
+    color: #2a2018;
     padding: 20px; max-width: 600px; width: 90%;
     max-height: 85vh; overflow-y: auto; position: relative;
   }
@@ -183,17 +184,17 @@
   }
   #report-close:hover { background: rgba(0,0,0,0.08); }
   
-  #submit-btn, #clear-btn { 
+  #submit-btn, #clear-btn {
     background: #5a3010;
-    color: #ecef99;
-    border: 1px solid #c8a84a;    /* gold */
+    color: #f5f0e8;
+    border: 1px solid #b8860b;    /* gold */
     font-family: Verdana, sans-serif;
     cursor: pointer;
     padding: 3px 10px;
     border-radius: 4px;
   }
-  #submit-btn:hover { background: #4a4a4a; }
-  #clear-btn:hover { background: #4a4a4a; }
+  #submit-btn:hover { background: #7a4818; }
+  #clear-btn:hover { background: #7a4818; }
   
   #help-close {
     position: absolute;
@@ -330,11 +331,11 @@
             <svg id="compass-svg" xmlns="http://www.w3.org/2000/svg"
                  viewBox="0 0 100 100" width="22" height="22">
               <circle cx="50" cy="50" r="46"
-                      fill="none" stroke="#ecef99" stroke-width="4"/>
+                      fill="none" stroke="#2a2018" stroke-width="4"/>
               <!-- rotate(degrees, centerX, centerY) -->
               <g id="arrow-group" transform="rotate(290, 50, 50)">
                 <polygon points="50,10 20,75 50,58 80,75"
-                         fill="#ecef99"/>
+                         fill="#2a2018"/>
               </g>
             </svg>
           </td>
@@ -988,18 +989,28 @@ document.addEventListener('keydown', e => {
     return;
   }
 
+  // Don't hijack single-letter/arrow shortcuts while the user is typing
+  // into a form field (e.g. the Smoke Report inputs).
+  const target = e.target;
+  const isFormField = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
+                       target.tagName === 'SELECT' || target.isContentEditable;
+  if (isFormField) return;
+
   if (e.key === 'b' || e.key === 'B') { openBinoculars(); return; }
 
   if (e.key === 'f' || e.key === 'F') { toggleSight(); return; }
 
   if (e.key === 'm' || e.key === 'M') { openMapView(); return; }
 
-  if (e.key === 'r' || e.key === 'R') { reportPage.classList.contains('open') ? closeReport() : openReport(); }
-  if (e.key === '?' || e.key === 'h' || e.key === 'H') 
-  { 
+  if (e.key === 'r' || e.key === 'R') {
+    if (reportPage.classList.contains('open')) { closeReport(); }
+    else { openReport(); }
+  }
+  if (e.key === '?' || e.key === 'h' || e.key === 'H')
+  {
     if (helpBackdrop.classList.contains('open'))
     { helpBackdrop.classList.remove('open')}
-    else 
+    else
     { helpBackdrop.classList.add('open') }
   }
   // Firefinder Controls
