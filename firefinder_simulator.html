@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Training Screen Layout</title>
+<style>
+  /* ── Dark theme base ────────────────────────────────────────────── */
+  body {
+    background: #2b2b2b;
+    color: #ecef99;   /* light yellow */
+    font-family: Verdana, sans-serif;
+  }
+
+  table { border-color: #4a4a4a; }
+  td    { border-color: #4a4a4a; }
+
+  button {
+    background: #3a3a3a;
+    color: #ecef99;
+    border: 1px solid #c8a84a;    /* gold */
+    font-family: Verdana, sans-serif;
+    cursor: pointer;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  button:hover { background: #4a4a4a; }
+
+  select, input[type="text"], input[type="number"] {
+    background: #1e1e1e;
+    color: #ecef99;
+    border: 1px solid #4a4a4a;
+    border-radius: 4px;
+    font-family: sans-serif;
+  }
+
+  label { color: #ecef99; }
+  h2    { color: #ecef99; }
+
+  button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  #initial-state {
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+    gap: 18px;
+  }
+
+  #initial-state h2 {
+    font-size: 1.1em;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: normal;
+  }
+
+  #initial-state p {
+    max-width: 480px;
+    line-height: 1.9;
+    color: #ecef99; /*a08830;*/
+    font-size: 0.9em;
+  }
+
+  /* ── End dark theme base ─────────────────────────────────────────── */
+  
+  kbd {
+    background: #1e1e1e;
+    border: 1px solid #a89848;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 0.9em;
+    font-family: monospace;
+  }
+
+  #prev-btn, #next-btn { font-size: 2em; padding: 12px 8px; }
+  #btn-expand { 
+    background: #2b2b2b;
+    border: none;
+    cursor: pointer;
+    padding: 1px;
+    margin: 2px 2px 2px 2px;
+  }
+  
+  #firefinder-hint {
+    font-size: 0.78em;
+    color: #a89848;
+    letter-spacing: 0.04em;
+    padding: 4px 0 2px;
+  }
+
+  #help-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  #help-backdrop.open { display: flex; }
+
+  #help-modal {
+    background: #222222; border: 2px solid #ac9b2b;
+    padding: 20px; max-width: 600px; width: 90%;
+    max-height: 85vh; overflow-y: auto; position: relative;
+  }
+
+  #report-page {
+    display: none;
+    position: fixed; top: 5%; left: 10%; width: 80%; height: 90%; max-width: 800px;
+    overflow-y: auto; background: #f5f0e8; border: 2px solid #c07800;
+    padding: 15px; z-index: 999; color: #2a2018;
+  }
+  #report-page.open { display: block; }
+
+  #report-page h2,
+  #report-page label { color: #2a2018; }
+
+  #report-page input[type="text"],
+  #report-page input[type="number"] {
+    background: #ffffff;
+    color: #2a2018;
+    border: 1px solid #9a8060;
+    border-radius: 4px;
+  }
+
+  /* ── Report form layout ───────────────────────────────────────── */
+  #report-page .form-section {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #d8cfc0;
+  }
+  #report-page .form-section:last-child { border-bottom: none; }
+
+  #report-page .field-label {
+    font-weight: bold;
+    color: #5a3010;
+    min-width: 160px;
+    flex-shrink: 0;
+    font-size: 0.9em;
+  }
+
+  .field-feedback {
+    font-size: 0.85em;
+    font-weight: bold;
+    flex-shrink: 0;
+    align-self: center;
+  }
+
+  /* ── Smoke description panel ──────────────────────────────────── */
+  .smoke-panel {
+    border: 1px solid #9a8060;
+    border-radius: 6px;
+    background: #ede8dc;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+  }
+
+  .smoke-panel .panel-title {
+    font-weight: bold;
+    color: #5a3010;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  #report-page input[type="radio"],
+  #report-page input[type="checkbox"] { accent-color: #c07800; }
+
+  #report-close {
+    background: transparent;
+    border: none;
+    color: #5a3010;
+    font-size: 1.3em;
+    cursor: pointer;
+    padding: 2px 8px;
+    line-height: 1;
+  }
+  #report-close:hover { background: rgba(0,0,0,0.08); }
+  
+  #submit-btn, #clear-btn { 
+    background: #5a3010;
+    color: #ecef99;
+    border: 1px solid #c8a84a;    /* gold */
+    font-family: Verdana, sans-serif;
+    cursor: pointer;
+    padding: 3px 10px;
+    border-radius: 4px;
+  }
+  #submit-btn:hover { background: #4a4a4a; }
+  #clear-btn:hover { background: #4a4a4a; }
+  
+  #help-close {
+    position: absolute;
+    top: 8px; right: 12px;    
+  }
+  #report-footer {
+    display: flex;
+    gap: 10px;
+    padding-top: 14px;
+    margin-top: 10px;
+  }
+
+  #report-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  #report-header h2 { margin: 0; }
+
+  /* ── Binoculars closeup modal ──────────────────────────────────── */
+  #modal-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.5);  /* Dim the photo just a bit */
+    z-index: 1100;
+    animation: backdropIn 0.25s ease forwards;
+  }
+  #modal-backdrop.visible { display: flex; align-items: center; justify-content: center; }
+
+  @keyframes backdropIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  #modal-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #modal-img {
+    display: block;
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 4px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+    transform-origin: center center;
+    animation: zoomIn 0.35s cubic-bezier(0.2, 0, 0.2, 1) forwards;
+  }
+
+  @keyframes zoomIn {
+    from { transform: scale(0.04); opacity: 0.6; }
+    to   { transform: scale(1);    opacity: 1;   }
+  }
+
+  #modal-close {
+    position: absolute;
+    top: -14px; right: -14px;
+    width: 28px; height: 28px;
+    border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.15);
+    color: #fff; font-size: 16px;
+    line-height: 28px; text-align: center;
+    cursor: pointer; transition: background 0.15s;
+    z-index: 1102;
+  }
+  #modal-close:hover { background: rgba(255,255,255,0.3); }
+</style>
+</head>
+<body>
+
+<table id="container" border="1" width="100%" cellpadding="4" cellspacing="0">
+
+  <!-- ═══ Header bar ═══════════════════════════════════════════════ -->
+  <tr>
+    <td colspan="3">
+      <table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>
+            <label for="lookout-sel">Lookout</label>
+            <select id="lookout-sel" name="lookout">
+              <option value="delilah">Delilah</option>
+              <option value="buck_rock">Buck Rock</option>
+              <option value="park_ridge">Park Ridge</option>
+            </select>
+            &emsp;
+            <label for="scenario-sel">Scenario</label>
+            <select id="scenario-sel" name="scenario">
+              <option value=""  >&mdash; select &mdash;</option>
+              <option value="d1">Delilah #1 (Easy)</option>
+              <option value="d2">Delilah #2 (Easy)</option>
+              <option value="d3">Delilah #3 (Medium)</option>
+              <option value="d4">Delilah #4 (Difficult)</option>
+              <option value="random">Random</option>
+            </select>
+          </td>
+          <td align="right">
+      <button type="button" id="btn-binoculars" disabled>Binoculars</button>
+      &emsp;
+      <button type="button" id="btn-firefinder" disabled>Firefinder</button>
+      &emsp;
+      <button type="button" id="btn-map" disabled>Map</button>
+      &emsp;
+      <button type="button" id="btn-report" disabled>Report</button>
+      &emsp;
+            <button type="button" id="help-btn">Help</button>
+      &nbsp;
+            <button type="button" id="btn-expand"><img id="expand-icon-img" src="expand-icon.png" width="18px"/></button>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- ═══ Photo row ════════════════════════════════════════════════ -->
+  <tr valign="middle">
+
+    <!-- Left panorama nav button -->
+    <td width="40" align="center">
+      <button type="button" id="prev-btn" disabled title="Previous photo (Page Up)">&#8249;</button>
+    </td>
+
+    <!-- Photo area with bearing-range corner annotations -->
+    <td>
+      <table width="100%" border="1" cellpadding="2" cellspacing="0">
+        <tr id="compass-bar" style="display:none;">
+          <td id="left-bearing" style="font-family: monospace;">281&#176;</td>
+          <td align="center">
+            <!-- compass arrow — rotate arrow-group to match photo bearing -->
+            <svg id="compass-svg" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 100 100" width="22" height="22">
+              <circle cx="50" cy="50" r="46"
+                      fill="none" stroke="#ecef99" stroke-width="4"/>
+              <!-- rotate(degrees, centerX, centerY) -->
+              <g id="arrow-group" transform="rotate(290, 50, 50)">
+                <polygon points="50,10 20,75 50,58 80,75"
+                         fill="#ecef99"/>
+              </g>
+            </svg>
+          </td>
+          <td id="right-bearing" align="right" style="font-family: monospace;">316&#176;</td>
+        </tr>
+        <tr>
+          <td colspan="3" align="center">
+            <div id="initial-state">
+              <img src="images/brf_logo.png" width="15%"/>
+              <h2>Fire Lookout Smoke Simulator</h2>
+              <p>Your challenge is to identify a smoke in the landscape,
+                 determine its location, and complete a smoke report form.</p>
+              <p>From the dropdown boxes above, select the desired Lookout and choose a Scenario.</p>
+            </div>
+            <div id="photo-area" style="display:none">
+              <img id="photo"
+                   src="Island_smoke.png"
+                   alt="Landscape panorama — Delilah West"
+                   width="900">
+              <!-- sight overlay canvas: positioned over photo via JS/CSS -->
+              <canvas id="sight-canvas" width="900" height="1"></canvas>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+
+    <!-- Right panorama nav button -->
+    <td width="40" align="center">
+      <button type="button" id="next-btn" disabled title="Next photo (Page Down)">&#8250;</button>
+    </td>
+
+  </tr>
+
+  <!-- ═══ Azimuth strip ═══════════════════════════════════════════ -->
+  <tr>
+    <td colspan="3" align="center">
+      <!-- firefinder base plate and vernier plate drawn by JS -->
+      <canvas id="azimuth-canvas" width="900" height="102"></canvas>
+    </td>
+  </tr>
+
+  <!-- ═══ Firefinder hint ══════════════════════════════════════════ -->
+  <tr id="firefinder-hint-row" style="display:none">
+    <td colspan="3" align="center">
+      <span id="firefinder-hint">
+        <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> &ensp;move 1&deg; &emsp;&emsp;
+        <kbd>Shift</kbd> + <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> &ensp;move 1&prime; 
+      </span>
+    </td>
+  </tr>
+
+</table>
+
+<!-- ══ Help modal ═══════════════════════════════════════════════════ -->
+<div id="help-backdrop">
+  <div id="help-modal" role="dialog" aria-modal="true" aria-label="Help">
+    <button id="help-close" aria-label="Close">✕</button>
+    <h2>How to Use the Simulator</h2>
+    <p>Select a Lookout station and then choose a Scenario to begin training.<br>
+    If you see smoke, use the Binoculars to get a close up view.<br>
+    Use the Firefinder to determine the azimuth.<br>
+    The Map will help you determine the distance and legal description.<br>
+    Complete the Report form. Submit it to receive an evaluation.</p>
+    <h3>Keyboard Shortcuts</h3>
+    <table>
+      <tr><td align="center"><kbd>B</kbd></td><td>Binoculars</td></tr>
+      <tr><td align="center"><kbd>F</kbd></td><td>Toggle firefinder</td></tr>
+      <tr><td align="center"><kbd>M</kbd></td><td>Open Map view in a separate tab</td></tr>
+      <tr><td align="center"><kbd>R</kbd></td><td>Toggle smoke report form</td></tr>
+      <tr><td align="center"><kbd>H</kbd><kbd>?</kbd></td><td>Toggle Help screen</td></tr>
+      <tr><td align="center"><kbd>Page Up</kbd><kbd>Page Dn</kbd></td><td>Previous/Next photograph</td></tr>
+    </table>
+    <ul>
+      <p><b>Firefinder Controls</b></p>
+      <table>
+      <tr><td><kbd>←</kbd><kbd>→</kbd></td><td>Move sight 1 degree</td></tr>
+      <tr><td><kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd></td><td>Move sight 1 minute</td></tr>
+      </table>
+    <p>Read azimuth degrees from the base plate strip below the photo, then
+       use the vernier scale to determine the minutes.</p>
+    </ul>
+  </div>
+</div>
+
+<!-- ── Binoculars closeup modal ──────────────────────────────────── -->
+<div id="modal-backdrop" role="dialog" aria-modal="true" aria-label="Smoke closeup">
+  <div id="modal-content">
+    <button id="modal-close" aria-label="Close">&#10005;</button>
+    <img id="modal-img" src="" alt="Smoke closeup">
+  </div>
+</div>
+
+  <!-- ── Report page ───────────────────────────────────────────── -->
+  <div id="report-page">
+
+    <div id="report-header">
+      <h2>Smoke Report</h2>
+      <button id="report-close" aria-label="Close">&#10005;</button>
+    </div>
+
+    <div id="report-body">
+
+      <div class="form-section dimmable">
+        <span class="field-label">Time and Date</span>
+        <input type="text" class="wide" id="time-date" placeholder="">
+        <span class="field-feedback" id="td-feedback"></span>
+      </div>
+
+      <div class="form-section">
+        <span class="field-label">Lookout Name</span>
+        <div class="radio-group">
+          <label><input type="radio" name="rpt-lookout" value="buck_rock"> Buck Rock</label>
+          <label><input type="radio" name="rpt-lookout" value="park_ridge"> Park Ridge</label>
+          <label><input type="radio" name="rpt-lookout" value="delilah"> Delilah</label>
+        </div>
+        <span class="field-feedback" id="lookout-feedback"></span>
+      </div>
+
+      <div class="form-section">
+        <span class="field-label">Classification</span>
+        <div class="radio-group">
+          <label><input type="radio" name="classification" value="false" id="class-false"> False</label>
+          <label><input type="radio" name="classification" value="legitimate"> Legitimate</label>
+          <label><input type="radio" name="classification" value="illegitimate"> Illegitimate</label>
+        </div>
+        <span class="field-feedback" id="classification-feedback"></span>
+      </div>
+
+      <div class="form-section dimmable">
+        <span class="field-label">Azimuth</span>
+        <div class="inline-fields">
+          <label>Degrees <input type="text" id="az-deg" min="0" max="359" placeholder="0–359" maxlength="4" size="4">&emsp;</label>
+          <label>Minutes <input type="text" id="az-min" min="0" max="59" placeholder="0–59" maxlength="4" size="4"></label>
+        </div>
+        <span class="field-feedback" id="azimuth-feedback"></span>
+      </div>
+
+      <div class="form-section dimmable">
+        <span class="field-label">Distance</span>
+        <div class="inline-fields">
+          <label><input type="text" id="distance" min="0" placeholder="#" maxlength="5" size="5">miles</label>
+        </div>
+        <span class="field-feedback" id="distance-feedback"></span>
+      </div>
+
+      <div class="form-section dimmable">
+        <span class="field-label">Landmark Name</span>
+        <input type="text" class="wide" id="landmark" placeholder="nearest named landmark" maxlength="60" size="60">
+      </div>
+
+      <div class="form-section dimmable">
+        <span class="field-label">Legal Description</span>
+        <div class="inline-fields">
+          <label>Township <input type="text" id="township" placeholder="#" maxlength="2" size="2">S&emsp;</label>
+          <label>Range <input type="text" id="range-f" placeholder="#" maxlength="2" size="2">E&emsp;</label>
+          <label>Section <input type="number" id="section" min="1" max="36" placeholder="1–36" maxlength="4" size="4">&emsp;</label>
+          <label>Quarter <input type="text" id="quarter" placeholder="" maxlength="4" size="4"></label>
+        </div>
+        <span class="field-feedback" id="legal-feedback"></span>
+      </div>
+
+      <div class="form-section dimmable">
+        <span class="field-label">Base of Smoke Visible</span>
+        <div class="radio-group">
+          <label><input type="radio" name="base-visible" value="yes"> Yes</label>
+          <label><input type="radio" name="base-visible" value="no"> No</label>
+        </div>
+        <span class="field-feedback" id="base-visible-feedback"></span>
+      </div>
+
+      <div class="smoke-panel dimmable">
+        <div class="panel-title">Smoke Description</div>
+
+        <div class="form-section">
+          <span class="field-label">Volume</span>
+          <div class="check-group">
+            <label><input type="checkbox" name="volume" value="small"> Small</label>
+            <label><input type="checkbox" name="volume" value="medium"> Medium</label>
+            <label><input type="checkbox" name="volume" value="large"> Large</label>
+          </div>
+          <span class="field-feedback" id="volume-feedback"></span>
+        </div>
+
+        <div class="form-section">
+          <span class="field-label">Color</span>
+          <div class="check-group">
+            <label><input type="checkbox" name="color" value="white"> White</label>
+            <label><input type="checkbox" name="color" value="grey"> Grey</label>
+            <label><input type="checkbox" name="color" value="black"> Black</label>
+            <label><input type="checkbox" name="color" value="brown"> Brown</label>
+          </div>
+          <span class="field-feedback" id="color-feedback"></span>
+        </div>
+
+        <div class="form-section">
+          <span class="field-label">Character</span>
+          <div class="check-group">
+            <label><input type="checkbox" name="character" value="thin"> Thin</label>
+            <label><input type="checkbox" name="character" value="heavy"> Heavy</label>
+            <label><input type="checkbox" name="character" value="billowing"> Billowing</label>
+            <label><input type="checkbox" name="character" value="blanket"> Blanket</label>
+            <label><input type="checkbox" name="character" value="column"> Column</label>
+            <label><input type="checkbox" name="character" value="puffing"> Puffing</label>
+          </div>
+          <span class="field-feedback" id="character-feedback"></span>
+        </div>
+
+        <div class="form-section">
+          <span class="field-label">Drift Direction</span>
+          <div class="radio-group">
+            <label><input type="radio" name="drift" value="N"> N</label>
+            <label><input type="radio" name="drift" value="S"> S</label>
+            <label><input type="radio" name="drift" value="E"> E</label>
+            <label><input type="radio" name="drift" value="W"> W</label>
+          </div>
+          <span class="field-feedback" id="drift-feedback"></span>
+        </div>
+
+      </div><!-- /smoke-panel -->
+
+      <div class="form-section dimmable">
+        <span class="field-label">Fuel Type <span class="opt-note">(optional)</span></span>
+        <div class="check-group">
+          <label><input type="checkbox" name="fuel" value="grass"> Grass</label>
+          <label><input type="checkbox" name="fuel" value="brush"> Brush</label>
+          <label><input type="checkbox" name="fuel" value="timber"> Timber</label>
+          <label><input type="checkbox" name="fuel" value="structure"> Structure</label>
+          <label><input type="checkbox" name="fuel" value="vehicle"> Vehicle</label>
+        </div>
+        <span class="field-feedback" id="fuel-feedback"></span>
+      </div>
+
+      <div class="form-section dimmable">
+        <span class="field-label">Jurisdiction</span>
+        <div class="radio-group">
+          <label><input type="radio" name="jurisdiction" value="SQF"> SQF</label>
+          <label><input type="radio" name="jurisdiction" value="SNF"> SNF</label>
+          <label><input type="radio" name="jurisdiction" value="SEKI"> SEKI</label>
+          <label><input type="radio" name="jurisdiction" value="FKU"> FKU</label>
+          <label><input type="radio" name="jurisdiction" value="TUU"> TUU</label>
+        </div>
+        <span class="field-feedback" id="jurisdiction-feedback"></span>
+      </div>
+
+      <div class="form-section dimmable">
+        <span class="field-label">Dispatcher</span>
+        <div class="radio-group">
+          <label><input type="radio" name="dispatcher" value="porterville"> Porterville</label>
+          <label><input type="radio" name="dispatcher" value="sierra"> Sierra</label>
+          <label><input type="radio" name="dispatcher" value="ash_mtn"> Ash Mtn Fire</label>
+          <label><input type="radio" name="dispatcher" value="none"> None</label>
+        </div>
+        <span class="field-feedback" id="dispatcher-feedback"></span>
+      </div>
+
+      <div class="form-section dimmable">
+        <span class="field-label">Best Access (optional)</span>
+        <input type="text" class="wide" id="best-access" placeholder="road or route" maxlength="120" size="60">
+      </div>
+
+
+      <div id="report-footer">
+        <button id="submit-btn">Submit</button>
+        <button id="clear-btn">Clear</button>
+      </div>
+
+    </div><!-- /report-body -->
+  </div><!-- /report-page -->
+
+
+<script>
+'use strict';
+
+// ── Firefinder constants ───────────────────────────────────────────
+const LEFT_AZ  = 281;
+const RIGHT_AZ = 316;
+const AZ_RANGE = RIGHT_AZ - LEFT_AZ;
+const VH = 44;   // vernier strip height px
+const BH = 58;   // base plate height px
+const S  = { outerHW:40, innerHW:21, topCap:22, footOut:13, footH:22, cr:10 };
+
+// ── Firefinder state ───────────────────────────────────────────────
+let sightFrac      = 0.5;
+let sightVisible   = false;
+let sightShownOnce = false;
+let PW = 0, PH = 0;
+
+// ── Element references ─────────────────────────────────────────────
+const helpBackdrop = document.getElementById('help-backdrop');
+const reportPage   = document.getElementById('report-page');
+const photoEl      = document.getElementById('photo');
+const sightCvs     = document.getElementById('sight-canvas');
+const azCvs        = document.getElementById('azimuth-canvas');
+const binoBackdrop  = document.getElementById('modal-backdrop');
+const binoImg       = document.getElementById('modal-img');
+const initialState   = document.getElementById('initial-state');
+const photoArea      = document.getElementById('photo-area');
+const hintRow        = document.getElementById('firefinder-hint-row');
+const compassBar    = document.getElementById('compass-bar');
+const actionButtons = ['btn-binoculars','btn-firefinder','btn-map','btn-report','prev-btn','next-btn']
+                        .map(id => document.getElementById(id));
+
+// ── Scenario activation ────────────────────────────────────────────
+function activateScenario() {
+  initialState.style.display = 'none';
+  photoArea.style.display    = '';
+  actionButtons.forEach(btn => btn.disabled = false);
+  compassBar.style.display   = '';
+  requestAnimationFrame(initFirefinder);
+}
+
+document.getElementById('scenario-sel').addEventListener('change', () => {
+  if (document.getElementById('scenario-sel').value) {
+    activateScenario();
+  }
+});
+
+// --- Prev/Next Photo buttons
+  document.getElementById('prev-btn').addEventListener('click', () => {
+    alert('When implemented, this will show the previous photo.');
+  });
+  document.getElementById('next-btn').addEventListener('click', () => {
+    alert('When implemented, this will show the next photo.');
+  });
+// ── Help modal ─────────────────────────────────────────────────────
+document.getElementById('help-btn').addEventListener('click', () =>
+  helpBackdrop.classList.add('open'));
+
+document.getElementById('help-close').addEventListener('click', () =>
+  helpBackdrop.classList.remove('open'));
+
+helpBackdrop.addEventListener('click', e => {
+  if (e.target === helpBackdrop) helpBackdrop.classList.remove('open');
+});
+
+// ── Report modal ───────────────────────────────────────────────────
+function openReport()  { reportPage.classList.add('open'); }
+function closeReport() { reportPage.classList.remove('open'); }
+
+document.getElementById('btn-report').addEventListener('click', () => {
+  if (reportPage.classList.contains('open')) {
+    closeReport();
+  } else {
+    openReport();
+  }
+});
+document.getElementById('report-close').addEventListener('click', closeReport);
+
+// ── Firefinder init ────────────────────────────────────────────────
+function initFirefinder() {
+  PW = photoEl.offsetWidth;
+  PH = photoEl.offsetHeight;
+  if (!PW || !PH) { requestAnimationFrame(initFirefinder); return; }
+
+  // Overlay the sight canvas exactly over the photo.
+  // The photo is centered inside its <td>, so compute its actual offset
+  // within the positioned parent rather than assuming top:0 left:0.
+  photoEl.parentElement.style.position = 'relative';
+  sightCvs.style.position      = 'absolute';
+  sightCvs.style.pointerEvents = 'none';
+
+  const photoRect  = photoEl.getBoundingClientRect();
+  const parentRect = photoEl.parentElement.getBoundingClientRect();
+  sightCvs.style.left = (photoRect.left - parentRect.left) + 'px';
+  sightCvs.style.top  = (photoRect.top  - parentRect.top)  + 'px';
+
+  sightCvs.width  = PW;
+  sightCvs.height = PH;
+
+  azCvs.width  = PW;
+  azCvs.height = VH + BH;
+
+  render();
+}
+
+photoEl.addEventListener('load', () => requestAnimationFrame(initFirefinder));
+if (photoEl.complete && photoEl.naturalWidth > 0) requestAnimationFrame(initFirefinder);
+window.addEventListener('resize', () => requestAnimationFrame(initFirefinder));
+// Mouse Listener to move sight
+//photoEl.addEventListener('click', e => {
+//if (sightVisible)
+//{
+//    const rect = photoEl.getBoundingClientRect();
+//    sightFrac = Math.max(0, Math.min(1, (e.clientX - rect.left) /
+//  rect.width));
+//    render();
+//}
+//});
+
+// ── Sight toggle ───────────────────────────────────────────────────
+function toggleSight() {
+  sightVisible = !sightVisible;
+  if (sightVisible && !sightShownOnce) { sightFrac = 0.5; sightShownOnce = true; }
+  render();
+}
+
+document.getElementById('btn-firefinder').addEventListener('click', toggleSight);
+
+// ── Binoculars closeup ─────────────────────────────────────────────
+function openBinoculars() {
+  const photoRect = photoEl.getBoundingClientRect();
+  const cx = photoRect.left + photoRect.width  / 2;
+  const cy = photoRect.top  + photoRect.height / 2;
+  binoImg.style.transformOrigin =
+    (cx / window.innerWidth  * 100).toFixed(2) + '% ' +
+    (cy / window.innerHeight * 100).toFixed(2) + '%';
+
+  binoImg.src = 'smoke_circle.png';
+
+  // Re-trigger the zoom animation
+  binoImg.style.animation = 'none';
+  void binoImg.offsetWidth;
+  binoImg.style.animation = '';
+
+  binoBackdrop.classList.add('visible');
+}
+
+function closeBinoculars() {
+  binoBackdrop.classList.remove('visible');
+  setTimeout(() => { binoImg.src = ''; }, 300);
+}
+
+document.getElementById('btn-binoculars').addEventListener('click', openBinoculars);
+document.getElementById('modal-close').addEventListener('click', closeBinoculars);
+binoBackdrop.addEventListener('click', e => {
+  if (e.target === binoBackdrop) { closeBinoculars(); }
+});
+
+//--- Map View ------------------------------------------------------------
+function openMapView() {
+  if (sightVisible) {
+    window.open(`mockup/mapview.html?bearing=${currentAz().toFixed(2)}`, 'mapview');
+  } else {
+    window.open('mockup/mapview.html', 'mapview');
+  }
+}
+
+document.getElementById('btn-map').addEventListener('click', openMapView);
+
+const expandIconImg = document.getElementById('expand-icon-img');
+
+document.getElementById('btn-expand').addEventListener('click', toggleFullscreen);
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    const el = document.documentElement;
+    if (el.requestFullscreen) {
+      el.requestFullscreen();
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    } else if (el.msRequestFullscreen) {
+      el.msRequestFullscreen();
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  if (document.fullscreenElement) {
+    expandIconImg.src = 'collapse-icon.png';
+  } else {
+    expandIconImg.src = 'expand-icon.png';
+  }
+});
+  
+// ── Azimuth math ───────────────────────────────────────────────────
+function currentAz() { return LEFT_AZ + sightFrac * AZ_RANGE; }
+
+function azDegMin() {
+  const az  = currentAz();
+  const deg = Math.floor(az);
+  const min = Math.round((az - deg) * 60);
+  return min === 60 ? { deg: deg + 1, min: 0 } : { deg, min };
+}
+
+// ── Render ─────────────────────────────────────────────────────────
+function render() {
+  if (sightVisible) {
+    drawSight();
+    drawStrip();
+    hintRow.style.display = '';
+  } else {
+    sightCvs.getContext('2d').clearRect(0, 0, PW, PH);
+    azCvs.getContext('2d').clearRect(0, 0, azCvs.width, VH + BH);
+    hintRow.style.display = 'none';
+  }
+}
+
+// ── Sight overlay ──────────────────────────────────────────────────
+function drawSight() {
+  const ctx = sightCvs.getContext('2d');
+  ctx.clearRect(0, 0, PW, PH);
+  const cx = Math.round(sightFrac * PW);
+
+  ctx.save();
+  ctx.fillStyle = '#b8902a';
+  ctx.fillRect(cx - S.outerHW, 0, S.outerHW * 2, S.topCap);
+  ctx.fillRect(cx - S.outerHW, 0, S.outerHW - S.innerHW, PH - S.footH);
+  ctx.fillRect(cx + S.innerHW, 0, S.outerHW - S.innerHW, PH - S.footH);
+  ctx.fillRect(cx - S.outerHW - S.footOut, PH - S.footH,
+               (S.outerHW + S.footOut) * 2, S.footH);
+
+  ctx.strokeStyle = 'rgba(70,48,20,0.38)';
+  ctx.lineWidth = 1;
+  roundRect(ctx, cx - S.innerHW, S.topCap, S.innerHW * 2, PH - S.footH - S.topCap, S.cr);
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(210,30,30,0.95)';
+  ctx.lineWidth   = 1.5;
+  ctx.beginPath(); ctx.moveTo(cx, S.topCap); ctx.lineTo(cx, PH - S.footH); ctx.stroke();
+  ctx.restore();
+}
+
+// ── Azimuth strip ──────────────────────────────────────────────────
+function drawStrip() {
+  const ctx      = azCvs.getContext('2d');
+  const W        = azCvs.width;
+  const ppm      = W / (AZ_RANGE * 60);
+  const vernierX = Math.round((1 - sightFrac) * W);
+
+  ctx.clearRect(0, 0, W, VH + BH);
+
+  ctx.fillStyle = '#8c8c8c';
+  ctx.fillRect(0, 0, W, VH);
+
+  const bpTop  = VH;
+  const bgGrad = ctx.createLinearGradient(0, bpTop, 0, bpTop + BH);
+  bgGrad.addColorStop(0,   '#c0c2c4');
+  bgGrad.addColorStop(0.5, '#d0d2d4');
+  bgGrad.addColorStop(1,   '#b0b2b4');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, bpTop, W, BH);
+
+  ctx.strokeStyle = '#888a8c'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, bpTop + 0.5); ctx.lineTo(W, bpTop + 0.5); ctx.stroke();
+
+  ctx.strokeStyle = '#282828'; ctx.fillStyle = '#282828'; ctx.lineWidth = 1;
+  for (let m = 0; m <= AZ_RANGE * 60; m += 30) {
+    const x      = m * ppm;
+    const deg    = RIGHT_AZ - m / 60;
+    const isDeg  = (m % 60  === 0);
+    const is5deg = isDeg && (Math.round(deg) % 5 === 0);
+    const th     = is5deg ? BH * 0.60 : isDeg ? BH * 0.42 : BH * 0.26;
+
+    ctx.beginPath(); ctx.moveTo(x, bpTop); ctx.lineTo(x, bpTop + th); ctx.stroke();
+
+    if (isDeg && Math.round(deg) % 10 === 0) {
+      ctx.font = '12px Georgia';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillText(Math.round(deg), x, bpTop + th + 2);
+    }
+  }
+
+  const halfDegPx = ppm * 30;
+  const vW        = 29 * halfDegPx;
+  const vPpm      = vW / 30;
+
+  const vGrad = ctx.createLinearGradient(0, 1, 0, VH - 2);
+  vGrad.addColorStop(0,   '#f0cc30');
+  vGrad.addColorStop(0.5, '#d4a820');
+  vGrad.addColorStop(1,   '#a87c10');
+  ctx.fillStyle = vGrad;
+  ctx.fillRect(vernierX - vW, 1, vW, VH - 2);
+
+  ctx.strokeStyle = '#3a1800'; ctx.fillStyle = '#3a1800'; ctx.lineWidth = 1;
+  for (let vm = 0; vm <= 30; vm++) {
+    const vx   = vernierX - vm * vPpm;
+    const is10 = vm > 0 && vm % 10 === 0;
+    const is5  = vm > 0 && vm % 5  === 0 && !is10;
+    const vh   = is10 ? VH * 0.55 : is5 ? VH * 0.36 : VH * 0.22;
+
+    ctx.beginPath(); ctx.moveTo(vx, VH - 2); ctx.lineTo(vx, VH - 2 - vh); ctx.stroke();
+    if (is10) {
+      ctx.font = '9px Georgia'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText(vm, vx, VH - 2 - vh - 1);
+    }
+  }
+
+  ctx.fillStyle = '#2a1000';
+  ctx.beginPath();
+  ctx.moveTo(vernierX,     VH - 2);
+  ctx.lineTo(vernierX - 5, VH - 11);
+  ctx.lineTo(vernierX + 5, VH - 11);
+  ctx.closePath(); ctx.fill();
+
+  ctx.strokeStyle = 'rgba(72,108,225,0.55)'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+  ctx.beginPath(); ctx.moveTo(vernierX, VH); ctx.lineTo(vernierX, VH + BH); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// ── Utility ────────────────────────────────────────────────────────
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);     ctx.arcTo(x + w, y,     x + w, y + r,     r);
+  ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);     ctx.arcTo(x,     y + h, x,      y + h - r, r);
+  ctx.lineTo(x, y + r);         ctx.arcTo(x, y,          x + r,  y,         r);
+  ctx.closePath();
+}
+
+// ── Evaluation ─────────────────────────────────────────────────────
+function setFeedback(el, text, correct) {
+  el.textContent = text;
+  el.style.color  = correct ? 'green' : 'red';
+  el.style.fontWeight = 'bold';
+  el.style.marginTop  = '0px';
+  el.style.fontSize    = '0.9em';
+}
+
+function evaluateReport() {
+  const classificationFb = document.getElementById('classification-feedback');
+
+  const selected = document.querySelector('input[name="classification"]:checked');
+  if (!selected) {
+    setFeedback(classificationFb, 'This field is required', false);
+  } else if (selected.value === 'illegitimate') {
+    setFeedback(classificationFb, '✔', true);
+  } else {
+    setFeedback(classificationFb, 'X', false);
+  }
+}
+
+document.getElementById('submit-btn').addEventListener('click', evaluateReport);
+
+function clearReport() {
+  document.querySelectorAll('#report-body input[type="text"], #report-body input[type="number"]')
+    .forEach(el => el.value = '');
+  document.querySelectorAll('#report-body input[type="radio"], #report-body input[type="checkbox"]')
+    .forEach(el => el.checked = false);
+  document.querySelectorAll('.field-feedback')
+    .forEach(el => el.textContent = '');
+}
+
+document.getElementById('clear-btn').addEventListener('click', clearReport);
+
+// ── Keyboard ───────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    helpBackdrop.classList.remove('open');
+    closeReport();
+    closeBinoculars();
+    return;
+  }
+
+  if (e.key === 'b' || e.key === 'B') { openBinoculars(); return; }
+
+  if (e.key === 'f' || e.key === 'F') { toggleSight(); return; }
+
+  if (e.key === 'm' || e.key === 'M') { openMapView(); return; }
+
+  if (e.key === 'r' || e.key === 'R') { reportPage.classList.contains('open') ? closeReport() : openReport(); }
+  if (e.key === '?' || e.key === 'h' || e.key === 'H') 
+  { 
+    if (helpBackdrop.classList.contains('open'))
+    { helpBackdrop.classList.remove('open')}
+    else 
+    { helpBackdrop.classList.add('open') }
+  }
+  // Firefinder Controls
+  if (!sightVisible) return;
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  e.preventDefault();
+
+  const totalMin = AZ_RANGE * 60;
+  const step     = e.shiftKey ? 1 : 60;
+  const dir      = e.key === 'ArrowRight' ? 1 : -1;
+  sightFrac = Math.max(0, Math.min(1, sightFrac + dir * step / totalMin));
+  render();
+});
+</script>
+</body>
+</html>
