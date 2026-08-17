@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Training Screen Layout</title>
+<title>Firefinder Simulator</title>
 <style>
   /* ── Light theme base ───────────────────────────────────────────── */
   body {
@@ -312,7 +312,7 @@
       &emsp;
             <button type="button" id="help-btn">Help</button>
       &nbsp;
-            <button type="button" id="btn-expand"><img id="expand-icon-img" src="expand-icon.png" width="18px"/></button>
+            <button type="button" id="btn-expand"><img id="expand-icon-img" src="assets/expand-icon.png" width="18px"/></button>
           </td>
         </tr>
       </table>
@@ -350,7 +350,7 @@
         <tr>
           <td colspan="3" align="center">
             <div id="initial-state">
-              <img src="images/brf_logo.png" width="15%"/>
+              <img src="assets/brf_logo.png" width="15%"/>
               <h2>Fire Lookout Smoke Simulator</h2>
               <p>Your challenge is to identify a smoke in the landscape,
                  determine its location, and complete a smoke report form.</p>
@@ -894,7 +894,7 @@ function openBinoculars() {
     (cx / window.innerWidth  * 100).toFixed(2) + '% ' +
     (cy / window.innerHeight * 100).toFixed(2) + '%';
 
-  let closeupSrc = 'smoke_circle.png'; // fallback if the scenario has no smoke/closeup defined
+  let closeupSrc = 'assets/smoke_closeup_fallback.png'; // fallback if the scenario has no smoke/closeup defined
   const smoke = currentScenario && currentScenario.smoke;
   if (smoke && smoke.closeupImage) { closeupSrc = smoke.closeupImage; }
   binoImg.src = closeupSrc;
@@ -921,9 +921,9 @@ binoBackdrop.addEventListener('click', e => {
 //--- Map View ------------------------------------------------------------
 function openMapView() {
   if (sightVisible) {
-    window.open(`mockup/mapview.html?bearing=${currentAz().toFixed(2)}`, 'mapview');
+    window.open(`mapview/mapview.html?bearing=${currentAz().toFixed(2)}`, 'mapview');
   } else {
-    window.open('mockup/mapview.html', 'mapview');
+    window.open('mapview/mapview.html', 'mapview');
   }
 }
 
@@ -956,9 +956,9 @@ function toggleFullscreen() {
 
 document.addEventListener('fullscreenchange', () => {
   if (document.fullscreenElement) {
-    expandIconImg.src = 'collapse-icon.png';
+    expandIconImg.src = 'assets/collapse-icon.png';
   } else {
-    expandIconImg.src = 'expand-icon.png';
+    expandIconImg.src = 'assets/expand-icon.png';
   }
 });
   

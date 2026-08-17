@@ -89,9 +89,9 @@ const SCENARIOS = {
     photoIds: ["delilah_3"],
     smoke: {
       photoId: "delilah_3",
-      overlayImage: "white_smoke.png",
+      overlayImage: "assets/white_smoke.png",
       xPos: 1606, yPos: 434, widthPx: 96,   // pixel coords on the 1920x870 native photo
-      closeupImage: "smoke_circle.png"
+      closeupImage: "assets/smoke_closeup_fallback.png"
     },
     answers: { // TODO: placeholder — see file header
       classification: "illegitimate",
@@ -116,9 +116,9 @@ const SCENARIOS = {
     photoIds: ["delilah_2"],
     smoke: {
       photoId: "delilah_2",
-      overlayImage: "black_smoke.png",
+      overlayImage: "assets/black_smoke.png",
       xPos: 1450, yPos: 438, widthPx: 77,   // pixel coords on the 1920x968 native photo
-      closeupImage: "smoke_circle.png"
+      closeupImage: null
     },
     answers: { // TODO: placeholder — see file header
       classification: "illegitimate",
@@ -143,9 +143,9 @@ const SCENARIOS = {
     photoIds: ["delilah_1"],
     smoke: {
       photoId: "delilah_1",
-      overlayImage: "black_smoke.png",
+      overlayImage: "assets/black_smoke.png",
       xPos: 384, yPos: 561, widthPx: 96,   // pixel coords on the 1920x968 native photo
-      closeupImage: "smoke_circle.png"
+      closeupImage: null
     },
     answers: { // TODO: placeholder — see file header
       classification: "legitimate",
@@ -170,9 +170,9 @@ const SCENARIOS = {
     photoIds: ["delilah_1",'delilah_2','delilah_3','delilah_4','delilah_5','delilah_6','delilah_7','delilah_8','delilah_9','delilah_10','delilah_11','delilah_12','delilah_13','delilah_14','delilah_15','delilah_16'],
     smoke: {
       photoId: "delilah_3",
-      overlayImage: "white_smoke.png",
+      overlayImage: "assets/white_smoke.png",
       xPos: 1632, yPos: 658, widthPx: 67,   // pixel coords on the 1920x968 native photo
-      closeupImage: "smoke_circle.png"
+      closeupImage: null
     },
     answers: { // TODO: placeholder — see file header
       classification: "false",
