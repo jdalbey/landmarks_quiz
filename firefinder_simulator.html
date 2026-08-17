@@ -1071,7 +1071,7 @@ function drawStrip() {
 
     ctx.beginPath(); ctx.moveTo(x, bpTop); ctx.lineTo(x, bpTop + th); ctx.stroke();
 
-    if (isDeg && Math.round(deg) % 10 === 0) {
+    if (isDeg && Math.round(deg) % 5 === 0) {
       ctx.font = '12px Georgia';
       ctx.textAlign = 'center'; ctx.textBaseline = 'top';
       ctx.fillText(Math.round(deg), x, bpTop + th + 2);

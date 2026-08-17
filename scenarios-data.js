@@ -97,14 +97,14 @@ const SCENARIOS = {
       classification: "illegitimate",
       azimuth_tolerance_min: 15,
       distance: { miles: 6.2, tolerance: 0.5 },
-      landmark: "Hume Lake",
+      landmark: "Island Park",
       legal: { township: 14, range: 29, section: 22, quarter: "NE" },
       base_visible: "yes",
       volume: ["medium"],
       color: ["grey", "white"],
       character: ["billowing"],
       drift: "N",
-      fuel: ["timber"],
+      fuel: ["grass"],
       jurisdiction: "SQF",
       dispatcher: "porterville"
     }
