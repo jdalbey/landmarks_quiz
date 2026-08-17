@@ -501,6 +501,7 @@
       <div class="form-section dimmable">
         <span class="field-label">Landmark Name</span>
         <input type="text" class="wide" id="landmark" placeholder="nearest named landmark" maxlength="60" size="60">
+        <span class="field-feedback" id="landmark-feedback"></span>
       </div>
 
       <div class="form-section dimmable">
@@ -1135,25 +1136,162 @@ function setFeedback(el, text, correct) {
   el.style.fontSize    = '0.9em';
 }
 
-function evaluateReport() {
-  const classificationFb = document.getElementById('classification-feedback');
+// A missing/null answer means "no answer key for this field in this
+// scenario" (e.g. distance/legal description for a false-alarm scenario
+// with no real location) — such fields are left ungraded (feedback
+// cleared) rather than marked wrong.
 
-  // TODO: only the Classification field is graded so far. currentScenario.answers
-  // (scenarios-data.js) already carries an answer key for the other report
-  // fields — extend this function to check them once those answers are real
-  // survey data rather than placeholders (see the TODO note at the top of
-  // scenarios-data.js).
-  const correctClassification =
-    currentScenario ? currentScenario.answers.classification : 'illegitimate';
-
-  const selected = document.querySelector('input[name="classification"]:checked');
+// Radio-button field: correctValue is a single string, compared
+// case-insensitively against the checked option's value.
+function gradeRadio(name, feedbackId, correctValue) {
+  const fb = document.getElementById(feedbackId);
+  if (correctValue == null) { fb.textContent = ''; return; }
+  const selected = document.querySelector('input[name="' + name + '"]:checked');
   if (!selected) {
-    setFeedback(classificationFb, 'This field is required', false);
-  } else if (selected.value === correctClassification) {
-    setFeedback(classificationFb, '✔', true);
+    setFeedback(fb, 'This field is required', false);
+  } else if (selected.value.toLowerCase() === String(correctValue).toLowerCase()) {
+    setFeedback(fb, '✔', true);
   } else {
-    setFeedback(classificationFb, 'X', false);
+    setFeedback(fb, 'X', false);
   }
+}
+
+// Checkbox-group field: correctValues is an array (possibly empty, meaning
+// "correctly none of these apply"); the checked set must match exactly.
+function gradeCheckboxGroup(name, feedbackId, correctValues) {
+  const fb = document.getElementById(feedbackId);
+  if (!correctValues) { fb.textContent = ''; return; }
+  const selected = Array.from(document.querySelectorAll('input[name="' + name + '"]:checked'))
+                         .map(el => el.value.toLowerCase());
+  const correct = correctValues.map(v => String(v).toLowerCase());
+  const setsEqual = selected.length === correct.length &&
+                     selected.every(v => correct.includes(v));
+  if (selected.length === 0 && correct.length > 0) {
+    setFeedback(fb, 'This field is required', false);
+  } else if (setsEqual) {
+    setFeedback(fb, '✔', true);
+  } else {
+    setFeedback(fb, 'X', false);
+  }
+}
+
+// Free-text field: correctValue is a string, compared case/whitespace-insensitively.
+function gradeText(elId, feedbackId, correctValue) {
+  const fb = document.getElementById(feedbackId);
+  if (correctValue == null) { fb.textContent = ''; return; }
+  const val = document.getElementById(elId).value.trim();
+  if (!val) {
+    setFeedback(fb, 'This field is required', false);
+  } else if (val.toLowerCase() === String(correctValue).trim().toLowerCase()) {
+    setFeedback(fb, '✔', true);
+  } else {
+    setFeedback(fb, 'X', false);
+  }
+}
+
+// The graded azimuth answer is derived, not stored: it's the bearing to
+// smoke.xPos on its photo, using that photo's left_azimuth/right_azimuth
+// from LOOKOUTS (see the header comment in scenarios-data.js). Returns
+// null if this scenario has no smoke or its photo has no azimuth range set.
+function scenarioCorrectAzimuth(scenario) {
+  if (!scenario || !scenario.smoke) return null;
+  const lookout = LOOKOUTS[scenario.lookout];
+  const photo = lookout && lookout.photos.find(p => p.id === scenario.smoke.photoId);
+  if (!photo || photo.left_azimuth == null || photo.right_azimuth == null) return null;
+  const span = azSpan(photo.left_azimuth, photo.right_azimuth);
+  const frac = scenario.smoke.xPos / photo.width;
+  return ((photo.left_azimuth + frac * span) % 360 + 360) % 360;
+}
+
+function gradeAzimuth(scenario) {
+  const fb = document.getElementById('azimuth-feedback');
+  const correctAz = scenarioCorrectAzimuth(scenario);
+  if (correctAz == null) { fb.textContent = ''; return; }
+
+  const deg = parseFloat(document.getElementById('az-deg').value);
+  const min = parseFloat(document.getElementById('az-min').value);
+  if (isNaN(deg) || isNaN(min)) {
+    setFeedback(fb, 'This field is required', false);
+    return;
+  }
+  const userAz = deg + min / 60;
+  let diff = Math.abs(userAz - correctAz);
+  diff = Math.min(diff, 360 - diff); // circular distance, for ranges crossing 360°/0°
+  const toleranceDeg = (scenario.answers.azimuth_tolerance_min || 0) / 60;
+  if (diff <= toleranceDeg) { setFeedback(fb, '✔', true); }
+  else { setFeedback(fb, 'X', false); }
+}
+
+function gradeDistance(scenario) {
+  const fb = document.getElementById('distance-feedback');
+  const ans = scenario && scenario.answers.distance;
+  if (!ans) { fb.textContent = ''; return; }
+
+  const val = parseFloat(document.getElementById('distance').value);
+  if (isNaN(val)) {
+    setFeedback(fb, 'This field is required', false);
+  } else if (Math.abs(val - ans.miles) <= ans.tolerance) {
+    setFeedback(fb, '✔', true);
+  } else {
+    setFeedback(fb, 'X', false);
+  }
+}
+
+function gradeLegal(scenario) {
+  const fb  = document.getElementById('legal-feedback');
+  const ans = scenario && scenario.answers.legal;
+  if (!ans) { fb.textContent = ''; return; }
+
+  const tRaw = document.getElementById('township').value.trim();
+  const rRaw = document.getElementById('range-f').value.trim();
+  const sRaw = document.getElementById('section').value.trim();
+  const qRaw = document.getElementById('quarter').value.trim();
+
+  if (!tRaw || !rRaw || !sRaw || !qRaw) {
+    setFeedback(fb, 'This field is required', false);
+    return;
+  }
+  const allCorrect =
+    parseInt(tRaw, 10) === ans.township &&
+    parseInt(rRaw, 10) === ans.range &&
+    parseInt(sRaw, 10) === ans.section &&
+    qRaw.toUpperCase() === ans.quarter.toUpperCase();
+  if (allCorrect) { setFeedback(fb, '✔', true); }
+  else { setFeedback(fb, 'X', false); }
+}
+
+// Maps a LOOKOUTS key ("Buck Rock") to its Lookout-Name radio value ("buck_rock").
+function lookoutRadioValue(lookoutName) {
+  if (!lookoutName) return null;
+  return lookoutName.toLowerCase().replace(/\s+/g, '_');
+}
+
+function evaluateReport() {
+  const scenario = currentScenario;
+  const answers  = scenario && scenario.answers;
+
+  gradeRadio('rpt-lookout', 'lookout-feedback', lookoutRadioValue(currentLookout));
+
+  if (!answers) {
+    // No active scenario / no answer key at all — nothing else to grade.
+    return;
+  }
+
+  gradeRadio('classification', 'classification-feedback', answers.classification);
+  gradeAzimuth(scenario);
+  gradeDistance(scenario);
+  gradeText('landmark', 'landmark-feedback', answers.landmark);
+  gradeLegal(scenario);
+  gradeRadio('base-visible', 'base-visible-feedback', answers.base_visible);
+  gradeCheckboxGroup('volume', 'volume-feedback', answers.volume);
+  gradeCheckboxGroup('color', 'color-feedback', answers.color);
+  gradeCheckboxGroup('character', 'character-feedback', answers.character);
+  gradeRadio('drift', 'drift-feedback', answers.drift);
+  gradeCheckboxGroup('fuel', 'fuel-feedback', answers.fuel);
+  gradeRadio('jurisdiction', 'jurisdiction-feedback', answers.jurisdiction);
+  gradeRadio('dispatcher', 'dispatcher-feedback', answers.dispatcher);
+  // Time/Date and Best Access have no answer key (no ground truth to check
+  // against) and are intentionally left ungraded.
 }
 
 document.getElementById('submit-btn').addEventListener('click', evaluateReport);

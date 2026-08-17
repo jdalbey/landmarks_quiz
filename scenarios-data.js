@@ -71,11 +71,12 @@
 //
 // ⚠ TODO — every field under `answers` below (distance, landmark, legal
 //   description, jurisdiction, dispatcher, volume/color/character/drift,
-//   fuel, best access) is SAMPLE/PLACEHOLDER content, not real survey data.
-//   evaluateReport() in firefinder_simulator.html still only grades the
-//   Classification field — it does NOT yet check these against the answer
-//   key. Fill in real answers here and extend evaluateReport() to use them
-//   before treating any of this as a trustworthy graded exercise.
+//   fuel) is SAMPLE/PLACEHOLDER content EXCEPT for scenario "d1", not real
+//   survey data. evaluateReport() in firefinder_simulator.html now grades
+//   all of these fields (plus Lookout Name and Azimuth) against whatever is
+//   here, so a placeholder-answer scenario will mark correct trainee input
+//   as wrong until its `answers` are replaced with real data. (Time/Date
+//   and Best Access have no answer key and are never graded.)
 //
 // "Random" in the Scenario dropdown is not a data entry here — the app
 // picks a random scenario id (excluding itself) that matches the selected
@@ -93,20 +94,20 @@ const SCENARIOS = {
       xPos: 1606, yPos: 434, widthPx: 96,   // pixel coords on the 1920x870 native photo
       closeupImage: "images/closeups/scenario1_closeup.png"
     },
-    answers: { // TODO: placeholder — see file header
+    answers: { 
       classification: "illegitimate",
       azimuth_tolerance_min: 15,
-      distance: { miles: 6.2, tolerance: 0.5 },
+      distance: { miles: 12.2, tolerance: 0.5 },
       landmark: "Island Park",
-      legal: { township: 14, range: 29, section: 22, quarter: "NE" },
+      legal: { township: 12, range: 24, section: 25, quarter: "Nw" },
       base_visible: "yes",
       volume: ["medium"],
-      color: ["grey", "white"],
+      color: ["white"],
       character: ["billowing"],
       drift: "N",
       fuel: ["grass"],
-      jurisdiction: "SQF",
-      dispatcher: "porterville"
+      jurisdiction: "SNF",
+      dispatcher: "Sierra"
     }
   },
 
