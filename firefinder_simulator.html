@@ -87,6 +87,11 @@
   }
 
   #prev-btn, #next-btn { font-size: 2em; padding: 12px 8px; }
+  /* Fixed offset (not computed per-photo) that roughly centers the nav
+     buttons on a typical panorama's height, so they don't need to track
+     each individual photo's actual rendered height. Tune this if the
+     typical displayed photo size changes a lot. */
+  .nav-td { padding-top: 300px; }
   #btn-expand {
     background: #f5f0e8;
     border: none;
@@ -320,10 +325,13 @@
   </tr>
 
   <!-- ═══ Photo row ════════════════════════════════════════════════ -->
-  <tr valign="middle">
+  <!-- valign="top": nav buttons anchor to the top of the row so they stay
+       put as photos of different heights are swapped in (middle-align would
+       shift them up/down with the row's height). -->
+  <tr valign="top">
 
     <!-- Left panorama nav button -->
-    <td width="40" align="center">
+    <td width="40" align="center" class="nav-td">
       <button type="button" id="prev-btn" disabled title="Previous photo (Page Up)">&#8249;</button>
     </td>
 
@@ -371,7 +379,7 @@
     </td>
 
     <!-- Right panorama nav button -->
-    <td width="40" align="center">
+    <td width="40" align="center" class="nav-td">
       <button type="button" id="next-btn" disabled title="Next photo (Page Down)">&#8250;</button>
     </td>
 
@@ -623,7 +631,15 @@
 // left/right azimuth vary per photo — set by showPhoto() from LOOKOUTS data.
 let LEFT_AZ  = 281;
 let RIGHT_AZ = 316;
-let AZ_RANGE = RIGHT_AZ - LEFT_AZ;
+let AZ_RANGE = azSpan(LEFT_AZ, RIGHT_AZ);
+
+// Angular span from left to right, in degrees, going clockwise — wrap-safe
+// for photos whose range crosses 360°/0° (e.g. left_azimuth: 347, right_azimuth: 8).
+function azSpan(left, right) {
+  let span = right - left;
+  if (span < 0) span += 360;
+  return span;
+}
 const VH = 44;   // vernier strip height px
 const BH = 58;   // base plate height px
 const S  = { outerHW:40, innerHW:21, topCap:22, footOut:13, footH:22, cr:10 };
@@ -653,6 +669,7 @@ const initialState   = document.getElementById('initial-state');
 const photoArea      = document.getElementById('photo-area');
 const hintRow        = document.getElementById('firefinder-hint-row');
 const compassBar    = document.getElementById('compass-bar');
+const arrowGroup     = document.getElementById('arrow-group');
 const leftBearingEl  = document.getElementById('left-bearing');
 const rightBearingEl = document.getElementById('right-bearing');
 const prevBtn        = document.getElementById('prev-btn');
@@ -806,16 +823,26 @@ function showPhoto(idx) {
     LEFT_AZ  = photo.left_azimuth;
     RIGHT_AZ = photo.right_azimuth;
   }
-  AZ_RANGE = RIGHT_AZ - LEFT_AZ;
+  AZ_RANGE = azSpan(LEFT_AZ, RIGHT_AZ);
 
   leftBearingEl.textContent  = LEFT_AZ  + '°';
   rightBearingEl.textContent = RIGHT_AZ + '°';
+  updateCompassArrow();
 
   prevBtn.disabled = (idx === 0);
   nextBtn.disabled = (idx === currentPhotos.length - 1);
 
   // Photo swap re-triggers the 'load' listener below, which calls
   // initFirefinder() once the new image has actually rendered.
+}
+
+// Point the compass arrow at the bearing in the middle of the current
+// photo's azimuth range, so it gives a rough sense of which direction the
+// lookout is facing. Wrap-safe: handles ranges that cross 360°/0° (e.g. a
+// photo spanning 347°→8°).
+function updateCompassArrow() {
+  const mid = ((LEFT_AZ + AZ_RANGE / 2) % 360 + 360) % 360;
+  arrowGroup.setAttribute('transform', 'rotate(' + mid + ', 50, 50)');
 }
 
 // ── Firefinder init ────────────────────────────────────────────────
@@ -964,7 +991,7 @@ document.addEventListener('fullscreenchange', () => {
 });
   
 // ── Azimuth math ───────────────────────────────────────────────────
-function currentAz() { return LEFT_AZ + sightFrac * AZ_RANGE; }
+function currentAz() { return ((LEFT_AZ + sightFrac * AZ_RANGE) % 360 + 360) % 360; }
 
 function azDegMin() {
   const az  = currentAz();
@@ -1037,7 +1064,7 @@ function drawStrip() {
   ctx.strokeStyle = '#282828'; ctx.fillStyle = '#282828'; ctx.lineWidth = 1;
   for (let m = 0; m <= AZ_RANGE * 60; m += 30) {
     const x      = m * ppm;
-    const deg    = RIGHT_AZ - m / 60;
+    const deg    = ((RIGHT_AZ - m / 60) % 360 + 360) % 360;
     const isDeg  = (m % 60  === 0);
     const is5deg = isDeg && (Math.round(deg) % 5 === 0);
     const th     = is5deg ? BH * 0.60 : isDeg ? BH * 0.42 : BH * 0.26;
