@@ -643,6 +643,29 @@ function azSpan(left, right) {
 }
 const VH = 44;   // vernier strip height px
 const BH = 58;   // base plate height px
+
+// Fixed scale, in degrees, spanned by the FULL WIDTH of the azimuth strip —
+// shared by both the base plate and the vernier (see drawStrip()), and
+// deliberately wider than AZ_RANGE (the photo's own real bearing span, which
+// varies photo to photo, ~19°-31° for delilah). The vernier's own on-screen
+// width is proportional to (panel width / this range), so this fixed, wider
+// value keeps it a small, CONSTANT width on every photo instead of
+// ballooning up to ~75% of the panel on narrow-range photos — that was the
+// clipping bug. Since it's also the base plate's own scale, the vernier's
+// 30-divisions-across-29 construction stays mathematically valid. The base
+// plate's window is centered on each photo's own bearing midpoint (static —
+// only changes when the photo does), so with DIAL_RANGE_DEG comfortably
+// wider than any one photo's AZ_RANGE, the vernier's travel stays away from
+// the panel edges in practice; it can still clip at the extreme ends of the
+// pointer's travel, which is left to whoever places the smoke for a
+// scenario to avoid.
+//
+// The vernier's angular content is always exactly 14.5° (29 fixed
+// half-degree main-scale intervals — see vW in drawStrip()), so the no-clip
+// threshold is DIAL_RANGE_DEG >= AZ_RANGE + 29. At 60 with delilah_16's
+// AZ_RANGE=19 (the narrowest photo), that leaves (60-19)/2 - 14.5 = 6° of
+// margin before the plate would run past that photo's own edge.
+const DIAL_RANGE_DEG = 60;
 const S  = { outerHW:40, innerHW:21, topCap:22, footOut:13, footH:22, cr:10 };
 
 // ── Firefinder state ───────────────────────────────────────────────
@@ -740,6 +763,7 @@ lookoutSel.addEventListener('change', () => {
   currentLookout = lookoutSel.value;
   populateScenarioSelect(currentLookout);
   resetToInitialState();
+  lookoutSel.blur();   // return focus to the page so arrow keys don't get eaten by the still-focused <select>
 });
 
 // ── Scenario activation ────────────────────────────────────────────
@@ -774,6 +798,7 @@ scenarioSel.addEventListener('change', () => {
   if (scenarioSel.value) {
     activateScenario(scenarioSel.value);
   }
+  scenarioSel.blur();   // return focus to the page so arrow keys move the sight, not the still-focused <select>
 });
 
 // --- Prev/Next Photo buttons
@@ -1041,10 +1066,24 @@ function drawSight() {
 
 // ── Azimuth strip ──────────────────────────────────────────────────
 function drawStrip() {
-  const ctx      = azCvs.getContext('2d');
-  const W        = azCvs.width;
-  const ppm      = W / (AZ_RANGE * 60);
-  const vernierX = Math.round((1 - sightFrac) * W);
+  const ctx = azCvs.getContext('2d');
+  const W   = azCvs.width;
+
+  // ONE shared scale for both the base plate and the vernier — the vernier's
+  // whole construction (30 vernier divisions across 29 base-plate half-degree
+  // divisions, below) only means something if it's built from the exact same
+  // pixels-per-minute the base plate itself is drawn at. DIAL_RANGE_DEG (not
+  // AZ_RANGE) sets that shared scale — fixed and wider than any one photo's
+  // own range — which is what keeps the vernier small on every photo instead
+  // of scaling with each photo's sometimes-narrow AZ_RANGE.
+  //
+  // The base plate's window is centered on THIS PHOTO's own bearing midpoint
+  // and only depends on AZ_RANGE, so it's recomputed when the photo changes
+  // but never as the pointer moves within it — "static," matching a real
+  // Firefinder's fixed azimuth ring. Ticks outside the photo's own edges are
+  // still real bearings on the same scale, so they're drawn plain, no fading.
+  const ppm         = W / (DIAL_RANGE_DEG * 60);
+  const windowStart = AZ_RANGE * 30 - DIAL_RANGE_DEG * 30;   // m (see below) at panel's x=0
 
   ctx.clearRect(0, 0, W, VH + BH);
 
@@ -1062,9 +1101,17 @@ function drawStrip() {
   ctx.strokeStyle = '#888a8c'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(0, bpTop + 0.5); ctx.lineTo(W, bpTop + 0.5); ctx.stroke();
 
+  // m is minutes measured from RIGHT_AZ, same convention as before (m=0 is
+  // RIGHT_AZ, m=AZ_RANGE*60 is LEFT_AZ) — just no longer clamped to [0,
+  // AZ_RANGE*60], since the window now extends DIAL_RANGE_DEG wide around
+  // the photo's midpoint rather than stopping at the photo's own edges.
   ctx.strokeStyle = '#282828'; ctx.fillStyle = '#282828'; ctx.lineWidth = 1;
-  for (let m = 0; m <= AZ_RANGE * 60; m += 30) {
-    const x      = m * ppm;
+  const mStart = 30 * Math.floor(windowStart / 30);
+  const mEnd   = 30 * Math.ceil((windowStart + DIAL_RANGE_DEG * 60) / 30);
+  for (let m = mStart; m <= mEnd; m += 30) {
+    const x = (m - windowStart) * ppm;
+    if (x < -20 || x > W + 20) continue;
+
     const deg    = ((RIGHT_AZ - m / 60) % 360 + 360) % 360;
     const isDeg  = (m % 60  === 0);
     const is5deg = isDeg && (Math.round(deg) % 5 === 0);
@@ -1078,6 +1125,12 @@ function drawStrip() {
       ctx.fillText(Math.round(deg), x, bpTop + th + 2);
     }
   }
+
+  // Vernier plate: moves with the pointer within the static window above.
+  // Reduces to the plain (1 - sightFrac) * W of the original single-scale
+  // design whenever DIAL_RANGE_DEG === AZ_RANGE.
+  const m0       = (AZ_RANGE - sightFrac * AZ_RANGE) * 60;
+  const vernierX = (m0 - windowStart) * ppm;
 
   const halfDegPx = ppm * 30;
   const vW        = 29 * halfDegPx;
