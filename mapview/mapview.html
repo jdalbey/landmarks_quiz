@@ -30,6 +30,15 @@
     font-size: 14px;
   }
 
+  .mile-label {
+    color: red;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+    text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white;
+  }
+
   #no-bearing-msg {
     position: absolute;
     top: 12px;
@@ -99,14 +108,18 @@ function destinationPoint(lat, lon, bearingDeg, distanceMeters) {
 
   let endPoint = null;
   if (hasBearing) {
+    // Project 20 miles out from the lookout along the reported bearing to
+    // get the far end of the sight line.
     endPoint = destinationPoint(
           center[0],
           center[1],
           bearing,
           distanceMeters
     );
-    console.log(endPoint);
+    console.log(endPoint); // debug: log the computed endpoint coordinates
   } else {
+    // No bearing was supplied, so there's nothing to draw — surface the
+    // explanatory message instead.
     document.getElementById('no-bearing-msg').style.display = '';
   }
 
@@ -136,6 +149,7 @@ function destinationPoint(lat, lon, bearingDeg, distanceMeters) {
 // Draw the sight line (and its tick marks) — only when a real bearing came
 // from the simulator. See the hasBearing check above.
 if (hasBearing) {
+  // Draw the red sight line itself, from the lookout out to endPoint.
   const sightLine = L.polyline(
     [center, endPoint],
     {
@@ -147,16 +161,17 @@ if (hasBearing) {
   // Add half-mile index marks
   //This draws a 500-foot tick mark every 0.5 mile on the right side of the line.
 
-  const tickSpacingMiles = 0.5;
-  const tickLengthFeet = 500;
+  const tickSpacingMiles = 0.5;   // how far apart the tick marks are, along the sight line
+  const tickLengthFeet = 500;     // length of each (short) tick mark
 
-  const tickLengthMeters = tickLengthFeet * 0.3048;
+  const tickLengthMeters = tickLengthFeet * 0.3048;   // convert to meters for use with destinationPoint
 
   // Right side of travel
-  const tickBearing = bearing + 90;
-  ticklengthToggle = false
+  const tickBearing = bearing + 90;   // perpendicular to the sight line, so ticks point off to its right
+  ticklengthToggle = false            // alternates short/long ticks, starting with a short one
   for (let mile = tickSpacingMiles; mile <= distanceMiles; mile += tickSpacingMiles) {
 
+      // Point on the sight line at this mile marker.
       const pointOnLine = destinationPoint(
           center[0],
           center[1],
@@ -164,11 +179,12 @@ if (hasBearing) {
           mile * 1609.344
       );
 
-      drawlength = tickLengthMeters
+      drawlength = tickLengthMeters   // default: short tick
       if (ticklengthToggle)
-          drawlength = tickLengthMeters * 2
-      ticklengthToggle = !ticklengthToggle
+          drawlength = tickLengthMeters * 2   // every other tick is drawn twice as long, to ease counting miles
+      ticklengthToggle = !ticklengthToggle    // flip for the next tick
 
+      // End point of this tick mark, offset perpendicular from the sight line.
       const tickEnd = destinationPoint(
           pointOnLine[0],
           pointOnLine[1],
@@ -176,6 +192,7 @@ if (hasBearing) {
           drawlength
       );
 
+      // Draw the tick mark on the map.
       L.polyline(
           [pointOnLine, tickEnd],
           {
@@ -183,6 +200,30 @@ if (hasBearing) {
               weight: 2
           }
       ).addTo(map);
+
+      // Label the long (whole-mile) ticks with the mile number, placed a
+      // bit past the tick's far end (away from the sight line). The ticks
+      // themselves are only a few pixels long on screen at most zoom
+      // levels, so the label is offset an extra tickLengthMeters beyond
+      // tickEnd to keep it clearly separated from the line, with an
+      // explicit centered iconAnchor so it doesn't drift toward the line.
+      if (drawlength === tickLengthMeters * 2) {
+          const labelPoint = destinationPoint(
+              pointOnLine[0],
+              pointOnLine[1],
+              tickBearing,
+              drawlength + tickLengthMeters
+          );
+          L.marker(labelPoint, {
+              icon: L.divIcon({
+                  className: 'mile-label',
+                  html: mile.toString(),
+                  iconSize: [16, 16],
+                  iconAnchor: [8, 8]
+              }),
+              interactive: false
+          }).addTo(map);
+      }
 
   }
 }
