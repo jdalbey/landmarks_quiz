@@ -399,6 +399,7 @@
       <span id="firefinder-hint">
         <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> &ensp;move 1&deg; &emsp;&emsp;
         <kbd>Shift</kbd> + <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> &ensp;move 1&prime; 
+        &ensp;&ensp;&ensp;For educational use only.
       </span>
     </td>
   </tr>
@@ -529,21 +530,21 @@
 
         <div class="form-section">
           <span class="field-label">Volume</span>
-          <div class="check-group">
-            <label><input type="checkbox" name="volume" value="small"> Small</label>
-            <label><input type="checkbox" name="volume" value="medium"> Medium</label>
-            <label><input type="checkbox" name="volume" value="large"> Large</label>
+          <div class="radio-group">
+            <label><input type="radio" name="volume" value="small"> Small</label>
+            <label><input type="radio" name="volume" value="medium"> Medium</label>
+            <label><input type="radio" name="volume" value="large"> Large</label>
           </div>
           <span class="field-feedback" id="volume-feedback"></span>
         </div>
 
         <div class="form-section">
           <span class="field-label">Color</span>
-          <div class="check-group">
-            <label><input type="checkbox" name="color" value="white"> White</label>
-            <label><input type="checkbox" name="color" value="grey"> Grey</label>
-            <label><input type="checkbox" name="color" value="black"> Black</label>
-            <label><input type="checkbox" name="color" value="brown"> Brown</label>
+          <div class="radio-group">
+            <label><input type="radio" name="color" value="white"> White</label>
+            <label><input type="radio" name="color" value="grey"> Grey</label>
+            <label><input type="radio" name="color" value="black"> Black</label>
+            <label><input type="radio" name="color" value="brown"> Brown</label>
           </div>
           <span class="field-feedback" id="color-feedback"></span>
         </div>
@@ -568,6 +569,7 @@
             <label><input type="radio" name="drift" value="S"> S</label>
             <label><input type="radio" name="drift" value="E"> E</label>
             <label><input type="radio" name="drift" value="W"> W</label>
+            <label><input type="radio" name="drift" value="none"> None</label>
           </div>
           <span class="field-feedback" id="drift-feedback"></span>
         </div>
@@ -753,6 +755,7 @@ function resetToInitialState() {
   actionButtons.forEach(btn => btn.disabled = true);
   currentScenario = null;
   currentPhotos   = [];
+  clearReport();   // wipe any leftover answers/feedback from the previous scenario
 }
 
 populateLookoutSelect();
@@ -775,6 +778,7 @@ function activateScenario(scenarioId) {
   const scenario = SCENARIOS[resolvedId];
   if (!scenario) { return; }
   currentScenario = scenario;
+  clearReport();   // wipe any leftover answers/feedback from the previous scenario
 
   const lookoutPhotos = LOOKOUTS[currentLookout].photos;
   currentPhotos = scenario.photoIds
@@ -1181,12 +1185,42 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 // ── Evaluation ─────────────────────────────────────────────────────
-function setFeedback(el, text, correct) {
+// correctText, when given and correct is false, is appended as a muted
+// "(...)" hint so a wrong entry also shows the right answer.
+function setFeedback(el, text, correct, correctText) {
   el.textContent = text;
   el.style.color  = correct ? 'green' : 'red';
   el.style.fontWeight = 'bold';
   el.style.marginTop  = '0px';
   el.style.fontSize    = '0.9em';
+
+  if (!correct && correctText) {
+    const hint = document.createElement('span');
+    hint.textContent = '  (' + correctText + ')';
+    hint.style.color = '#666';
+    hint.style.fontWeight = 'normal';
+    el.appendChild(hint);
+  }
+}
+
+// Looks up the visible label text for a radio/checkbox input, e.g.
+// labelForValue('rpt-lookout', 'buck_rock') -> 'Buck Rock'. Falls back to
+// the raw value if no matching input/label is found.
+function labelForValue(name, value) {
+  const input = document.querySelector('input[name="' + name + '"][value="' + value + '"]');
+  if (!input) { return value; }
+  const label = input.closest('label');
+  if (!label) { return value; }
+  return label.textContent.trim();
+}
+
+// Formats a decimal-degree azimuth as "142° 30′" for display in a
+// correct-answer hint.
+function formatAzimuth(az) {
+  let deg = Math.floor(az);
+  let min = Math.round((az - deg) * 60);
+  if (min === 60) { min = 0; deg += 1; }
+  return deg + '° ' + min + '′';
 }
 
 // A missing/null answer means "no answer key for this field in this
@@ -1205,7 +1239,7 @@ function gradeRadio(name, feedbackId, correctValue) {
   } else if (selected.value.toLowerCase() === String(correctValue).toLowerCase()) {
     setFeedback(fb, '✔', true);
   } else {
-    setFeedback(fb, 'X', false);
+    setFeedback(fb, 'X', false, labelForValue(name, correctValue));
   }
 }
 
@@ -1224,7 +1258,11 @@ function gradeCheckboxGroup(name, feedbackId, correctValues) {
   } else if (setsEqual) {
     setFeedback(fb, '✔', true);
   } else {
-    setFeedback(fb, 'X', false);
+    let correctText = 'none';
+    if (correct.length > 0) {
+      correctText = correctValues.map(v => labelForValue(name, v)).join(', ');
+    }
+    setFeedback(fb, 'X', false, correctText);
   }
 }
 
@@ -1238,7 +1276,7 @@ function gradeText(elId, feedbackId, correctValue) {
   } else if (val.toLowerCase() === String(correctValue).trim().toLowerCase()) {
     setFeedback(fb, '✔', true);
   } else {
-    setFeedback(fb, 'X', false);
+    setFeedback(fb, 'X', false, String(correctValue).trim());
   }
 }
 
@@ -1272,7 +1310,7 @@ function gradeAzimuth(scenario) {
   diff = Math.min(diff, 360 - diff); // circular distance, for ranges crossing 360°/0°
   const toleranceDeg = (scenario.answers.azimuth_tolerance_min || 0) / 60;
   if (diff <= toleranceDeg) { setFeedback(fb, '✔', true); }
-  else { setFeedback(fb, 'X', false); }
+  else { setFeedback(fb, 'X', false, formatAzimuth(correctAz)); }
 }
 
 function gradeDistance(scenario) {
@@ -1286,7 +1324,7 @@ function gradeDistance(scenario) {
   } else if (Math.abs(val - ans.miles) <= ans.tolerance) {
     setFeedback(fb, '✔', true);
   } else {
-    setFeedback(fb, 'X', false);
+    setFeedback(fb, 'X', false, ans.miles + ' mi');
   }
 }
 
@@ -1310,7 +1348,10 @@ function gradeLegal(scenario) {
     parseInt(sRaw, 10) === ans.section &&
     qRaw.toUpperCase() === ans.quarter.toUpperCase();
   if (allCorrect) { setFeedback(fb, '✔', true); }
-  else { setFeedback(fb, 'X', false); }
+  else {
+    const correctText = 'T' + ans.township + 'S R' + ans.range + 'E Sec ' + ans.section + ' ' + ans.quarter.toUpperCase();
+    setFeedback(fb, 'X', false, correctText);
+  }
 }
 
 // Maps a LOOKOUTS key ("Buck Rock") to its Lookout-Name radio value ("buck_rock").
@@ -1319,9 +1360,116 @@ function lookoutRadioValue(lookoutName) {
   return lookoutName.toLowerCase().replace(/\s+/g, '_');
 }
 
-function evaluateReport() {
-  const scenario = currentScenario;
-  const answers  = scenario && scenario.answers;
+// Which fields are "required" depends on the scenario: a field with no
+// answer key for this scenario (see the "no answer key" comment above)
+// isn't required either, just as evaluateReport()/gradeAllFields() already
+// leaves it ungraded. Time and Date has no answer key at all, but must
+// still be filled in before the rest of the report can be evaluated.
+function requiredFieldChecks(scenario) {
+  const answers = scenario && scenario.answers;
+  const checks  = [];
+
+  checks.push({
+    feedbackId: 'td-feedback',
+    filled: document.getElementById('time-date').value.trim() !== ''
+  });
+
+  checks.push({
+    feedbackId: 'lookout-feedback',
+    filled: document.querySelector('input[name="rpt-lookout"]:checked') != null
+  });
+
+  if (!answers) { return checks; }
+
+  if (answers.classification != null) {
+    checks.push({
+      feedbackId: 'classification-feedback',
+      filled: document.querySelector('input[name="classification"]:checked') != null
+    });
+  }
+
+  if (scenarioCorrectAzimuth(scenario) != null) {
+    const deg = document.getElementById('az-deg').value.trim();
+    const min = document.getElementById('az-min').value.trim();
+    checks.push({ feedbackId: 'azimuth-feedback', filled: deg !== '' && min !== '' });
+  }
+
+  if (answers.distance) {
+    checks.push({
+      feedbackId: 'distance-feedback',
+      filled: document.getElementById('distance').value.trim() !== ''
+    });
+  }
+
+  if (answers.landmark != null) {
+    checks.push({
+      feedbackId: 'landmark-feedback',
+      filled: document.getElementById('landmark').value.trim() !== ''
+    });
+  }
+
+  if (answers.legal) {
+    const t = document.getElementById('township').value.trim();
+    const r = document.getElementById('range-f').value.trim();
+    const s = document.getElementById('section').value.trim();
+    const q = document.getElementById('quarter').value.trim();
+    checks.push({ feedbackId: 'legal-feedback', filled: t !== '' && r !== '' && s !== '' && q !== '' });
+  }
+
+  if (answers.base_visible != null) {
+    checks.push({
+      feedbackId: 'base-visible-feedback',
+      filled: document.querySelector('input[name="base-visible"]:checked') != null
+    });
+  }
+
+  if (answers.volume && answers.volume.length > 0) {
+    checks.push({
+      feedbackId: 'volume-feedback',
+      filled: document.querySelector('input[name="volume"]:checked') != null
+    });
+  }
+
+  if (answers.color && answers.color.length > 0) {
+    checks.push({
+      feedbackId: 'color-feedback',
+      filled: document.querySelector('input[name="color"]:checked') != null
+    });
+  }
+
+  if (answers.character && answers.character.length > 0) {
+    checks.push({
+      feedbackId: 'character-feedback',
+      filled: document.querySelectorAll('input[name="character"]:checked').length > 0
+    });
+  }
+
+  if (answers.drift != null) {
+    checks.push({
+      feedbackId: 'drift-feedback',
+      filled: document.querySelector('input[name="drift"]:checked') != null
+    });
+  }
+
+  if (answers.jurisdiction != null) {
+    checks.push({
+      feedbackId: 'jurisdiction-feedback',
+      filled: document.querySelector('input[name="jurisdiction"]:checked') != null
+    });
+  }
+
+  if (answers.dispatcher != null) {
+    checks.push({
+      feedbackId: 'dispatcher-feedback',
+      filled: document.querySelector('input[name="dispatcher"]:checked') != null
+    });
+  }
+
+  return checks;
+}
+
+function gradeAllFields(scenario) {
+  const answers = scenario && scenario.answers;
 
   gradeRadio('rpt-lookout', 'lookout-feedback', lookoutRadioValue(currentLookout));
 
@@ -1336,15 +1484,46 @@ function evaluateReport() {
   gradeText('landmark', 'landmark-feedback', answers.landmark);
   gradeLegal(scenario);
   gradeRadio('base-visible', 'base-visible-feedback', answers.base_visible);
-  gradeCheckboxGroup('volume', 'volume-feedback', answers.volume);
-  gradeCheckboxGroup('color', 'color-feedback', answers.color);
+  gradeRadio('volume', 'volume-feedback', answers.volume && answers.volume[0]);
+  gradeRadio('color', 'color-feedback', answers.color && answers.color[0]);
   gradeCheckboxGroup('character', 'character-feedback', answers.character);
   gradeRadio('drift', 'drift-feedback', answers.drift);
-  gradeCheckboxGroup('fuel', 'fuel-feedback', answers.fuel);
+  //gradeCheckboxGroup('fuel', 'fuel-feedback', answers.fuel); //OPTIONAL
   gradeRadio('jurisdiction', 'jurisdiction-feedback', answers.jurisdiction);
   gradeRadio('dispatcher', 'dispatcher-feedback', answers.dispatcher);
   // Time/Date and Best Access have no answer key (no ground truth to check
   // against) and are intentionally left ungraded.
+}
+
+function evaluateReport() {
+  const scenario = currentScenario;
+
+  // Developer override: entering "000" in Time and Date and clicking
+  // Submit forces immediate grading, bypassing the required-fields check
+  // below — a quick way to check a scenario's answer key without filling
+  // out the whole form.
+  const override = document.getElementById('time-date').value.trim() === '000';
+
+  if (!override) {
+    const checks     = requiredFieldChecks(scenario);
+    const allFilled  = checks.every(c => c.filled);
+    if (!allFilled) {
+      // Flag only the empty required fields; clear (rather than grade)
+      // every other field's feedback so no correct/incorrect answer is
+      // revealed until the whole form is filled in.
+      checks.forEach(c => {
+        const fb = document.getElementById(c.feedbackId);
+        if (c.filled) {
+          fb.textContent = '';
+        } else {
+          setFeedback(fb, 'This field is required', false);
+        }
+      });
+      return;
+    }
+  }
+
+  gradeAllFields(scenario);
 }
 
 document.getElementById('submit-btn').addEventListener('click', evaluateReport);

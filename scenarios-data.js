@@ -85,7 +85,7 @@
 const SCENARIOS = {
 
   "d1": {
-    label: "Delilah #1 (Easy)",
+    label: "Delilah #1 (Easy)", // Island Park
     lookout: "Delilah",
     photoIds: ["delilah_3"],
     smoke: {
@@ -112,7 +112,7 @@ const SCENARIOS = {
   },
 
   "d2": {
-    label: "Delilah #2 (Easy)",
+    label: "Delilah #2 (Easy)", // Wonder Valley
     lookout: "Delilah",
     photoIds: ["delilah_2"],
     smoke: {
@@ -121,11 +121,11 @@ const SCENARIOS = {
       xPos: 1450, yPos: 438, widthPx: 77,   // pixel coords on the 1920x968 native photo
       closeupImage: "images/closeups/scenario2_closeup.png"
     },
-    answers: { // TODO: placeholder — see file header
+    answers: { 
       classification: "illegitimate",
       azimuth_tolerance_min: 15,
       distance: { miles: 4.8, tolerance: 0.5 },
-      landmark: "Bald Mountain",
+      landmark: "Wonder Valley",
       legal: { township: 13, range: 28, section: 9, quarter: "SW" },
       base_visible: "no",
       volume: ["small"],
@@ -139,47 +139,101 @@ const SCENARIOS = {
   },
 
   "d3": {
-    label: "Delilah #3 (Medium)",
+    label: "Delilah #3 (Medium)",  //Deer Crk Rec Area
     lookout: "Delilah",
-    photoIds: ["delilah_1"],
+    photoIds: ["delilah_3"],
     smoke: {
-      photoId: "delilah_1",
-      overlayImage: "assets/smoke_ridge.png",
-      xPos: 1605, yPos: 391, widthPx: 96,   // pixel coords on the 1920x968 native photo
-      closeupImage: null
+      photoId: "delilah_3",
+      overlayImage: "assets/smoke_leaning.png",
+      xPos: 1343, yPos: 400, widthPx: 77,   // pixel coords on the 1920x968 native photo
+      closeupImage: "images/closeups/DeerCreek.jpg"
     },
-    answers: { // TODO: placeholder — see file header
-      classification: "legitimate",
-      azimuth_tolerance_min: 10,
-      distance: { miles: 9.1, tolerance: 0.5 },
-      landmark: "Squaw Valley",
-      legal: { township: 15, range: 27, section: 3, quarter: "NW" },
-      base_visible: "yes",
-      volume: ["large"],
-      color: ["black", "grey"],
-      character: ["column", "heavy"],
-      drift: "S",
-      fuel: ["timber", "brush"],
+    answers: { 
+      classification: "illegitimate",
+      azimuth_tolerance_min: 15,
+      distance: { miles: 4.8, tolerance: 0.5 },
+      landmark: "Deer Crk Rec Area",
+      legal: { township: 13, range: 28, section: 9, quarter: "SW" },
+      base_visible: "no",
+      volume: ["small"],
+      color: ["white"],
+      character: ["thin"],
+      drift: "E",
+      fuel: ["brush"],
       jurisdiction: "FKU",
       dispatcher: "sierra"
     }
   },
 
   "d4": {
-    label: "Delilah #4 (Difficult)",
+    label: "Delilah #4 (Medium)",  //Piedra silo
     lookout: "Delilah",
-    photoIds: ["delilah_1",'delilah_2','delilah_3','delilah_4','delilah_5','delilah_6','delilah_7','delilah_8','delilah_9','delilah_10','delilah_11','delilah_12','delilah_13','delilah_14','delilah_15','delilah_16'],
+    photoIds: ["delilah_2"],
     smoke: {
-      photoId: "delilah_9",
-      overlayImage: "assets/smoke_ridge.png",
-      xPos: 1300, yPos: 350, widthPx: 142,   // pixel coords on the 1920x968 native photo
-      closeupImage: null
+      photoId: "delilah_2",
+      overlayImage: "assets/smoke_copfire.png",
+      xPos: 835, yPos: 279, widthPx: 90,   // pixel coords on the 1920x968 native photo
+      closeupImage: "images/closeups/scenario4_closeup.png"
+    },
+    answers: { 
+      classification: "illegitimate",
+      azimuth_tolerance_min: 15,
+      distance: { miles: 4.8, tolerance: 0.5 },
+      landmark: "Piedra road silo",
+      legal: { township: 13, range: 28, section: 9, quarter: "SW" },
+      base_visible: "yes",
+      volume: ["small"],
+      color: ["grey"],
+      character: ["thin"],
+      drift: "S",
+      fuel: ["brush"],
+      jurisdiction: "FKU",
+      dispatcher: "none"
+    }
+  },
+
+  "d5": {
+    label: "Delilah #5 (Medium)",  //Logger Pt
+    lookout: "Delilah",
+    photoIds: ["delilah_12"],
+    smoke: {
+      photoId: "delilah_12",
+      overlayImage: "assets/forestfire smoke_chatgpt.png",
+      xPos: 1490, yPos: 382, widthPx: 77,   // pixel coords on the 1920x968 native photo
+      closeupImage: "images/closeups/LoggerPt.jpg"
+    },
+    answers: { 
+      classification: "illegitimate",
+      azimuth_tolerance_min: 15,
+      distance: { miles: 4.8, tolerance: 0.5 },
+      landmark: "Deer Crk Rec Area",
+      legal: { township: 13, range: 28, section: 9, quarter: "SW" },
+      base_visible: "no",
+      volume: ["small"],
+      color: ["white"],
+      character: ["thin"],
+      drift: "E",
+      fuel: ["brush"],
+      jurisdiction: "FKU",
+      dispatcher: "sierra"
+    }
+  },
+
+  "d6": {
+    label: "Delilah #6 (Difficult)",  //Manzanita Hill
+    lookout: "Delilah",
+    photoIds: ['delilah_8','delilah_9','delilah_10','delilah_11','delilah_12','delilah_13','delilah_14','delilah_15','delilah_16',"delilah_1",'delilah_2','delilah_3','delilah_4','delilah_5','delilah_6','delilah_7',],
+    smoke: {
+      photoId: "delilah_11",
+      overlayImage: "assets/smoke_rockyfire.png",
+      xPos: 1750, yPos: 174, widthPx: 77,   // pixel coords on the 1920x968 native photo
+      closeupImage: "images/closeups/ManzanitaHill.jpg"
     },
     answers: { // TODO: placeholder — see file header
-      classification: "false",
+      classification: "illegitimate",
       azimuth_tolerance_min: 10,
       distance: null,
-      landmark: "Bear Mountain (dust, not smoke)",
+      landmark: "Manzanita Hill",
       legal: null,
       base_visible: "no",
       volume: ["small"],
@@ -190,6 +244,61 @@ const SCENARIOS = {
       jurisdiction: "FKU",
       dispatcher: "none"
     }
-  }
+  },
+
+  "d7": {
+    label: "Delilah #7 (Difficult)", //Rough
+    lookout: "Delilah",
+    photoIds: ["delilah_1",'delilah_2','delilah_3','delilah_4','delilah_5','delilah_6','delilah_7','delilah_8','delilah_9','delilah_10','delilah_11','delilah_12','delilah_13','delilah_14','delilah_15','delilah_16'],
+    smoke: {
+      photoId: "delilah_9",
+      overlayImage: "assets/smoke_ridge.png",
+      xPos: 1300, yPos: 350, widthPx: 142,   // pixel coords on the 1920x968 native photo
+      closeupImage: null
+    },
+    answers: { 
+      classification: "illegitimate",
+      azimuth_tolerance_min: 10,
+      distance: 12.5,
+      landmark: "Rough Creek",
+      legal: null,
+      base_visible: "no",
+      volume: ["small"],
+      color: ["white"],
+      character: ["thin"],
+      drift: "N",
+      fuel: ["timber"],
+      jurisdiction: "SNF",
+      dispatcher: "Sierra"
+    }
+  },
+
+  "d8": {
+    label: "Delilah #8 (Medium)",  // Sequoia Highlands Camp
+    lookout: "Delilah",
+    photoIds: ["delilah_13"],
+    smoke: {
+      photoId: "delilah_13",
+      overlayImage: "assets/dustoverlay.png",
+      xPos: 1348, yPos: 404, widthPx: 77,   // pixel coords on the 1920x968 native photo
+      closeupImage: null
+    },
+    answers: { 
+      classification: "false",
+      azimuth_tolerance_min: 30,  // tolerance in minutes
+      distance: { miles: 2.5, tolerance: 0.5 },
+      landmark: "Sequoia Highlands Camp",
+      legal: { township: 15, range: 27, section: 3, quarter: "NW" },
+      base_visible: "yes",
+      volume: ["small"],
+      color: ["brown"],
+      character: ["column", "heavy"],
+      drift: "none",
+      fuel: ["timber"],
+      jurisdiction: "SQF",
+      dispatcher: "None"
+    }
+  },
+
 
 };
