@@ -49,6 +49,26 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── Compass rose overlay ────────────────────────────────────────────── */
+    /* Fixed size/position regardless of image scaling — sits just inside the
+       top edge of the photo, centered horizontally. Rotation is set per-photo
+       in JS (see updateCompassRose()); pointer-events: none so it never
+       blocks clicks on the landmarks underneath. */
+    #compass-rose {
+      display: none;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      width: 90px;
+      height: 90px;
+      transform: translateX(-50%);
+      opacity: 0.85;
+      filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6));
+      pointer-events: none;
+      z-index: 5;
+    }
+    #compass-rose.visible { display: block; }
+
     /* ── Panorama photo navigation ───────────────────────────────────────── */
     /* Fixed to the viewport (not #wrapper) so the arrows stay put vertically
        when switching between photos of different heights/aspect ratios. */
@@ -150,6 +170,7 @@
   <div id="wrapper">
     <img id="landscape" alt="Landscape">
     <svg id="overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+    <img id="compass-rose" src="assets/compass-rose.png" alt="Compass rose showing the camera bearing">
     <div id="loading-overlay">
       <div id="loading-spinner"></div>
       <div id="loading-text"></div>
@@ -167,6 +188,7 @@
   </div>
 
   <script src="panoramas-data.js"></script>
+  <script src="lookouts-data.js"></script>
   <script>
     // -------------------------------------------------------------------------
     // Panorama/photo state — landmark and photo data comes from PANORAMAS,
@@ -238,6 +260,59 @@
     const img     = document.getElementById('landscape');
     const navPrev = document.getElementById('nav-prev');
     const navNext = document.getElementById('nav-next');
+    const compassRose = document.getElementById('compass-rose');
+
+    // -------------------------------------------------------------------------
+    // Compass rose overlay — rotated per photo to show which way is north
+    // -------------------------------------------------------------------------
+    /*
+  compass-rose.png is drawn with N pointing straight up and is rotated
+  "heading-up" style: the direction the camera was facing always stays at the
+  top of the rose, so N swings around to show where true north actually lies
+  relative to that view. E.g. a photo facing due East (bearing 90°) shows N
+  swung to the left, since true north is 90° to your left when you face East.
+
+  Given a camera bearing B (0° = north, clockwise), true north sits at
+  screen angle (0 - B) measured clockwise from "up" — so the image is
+  rotated by -B degrees via CSS transform.
+
+  Bearing data (left_azimuth/right_azimuth per photo) lives in
+  lookouts-data.js's LOOKOUTS, matched to the current photo by its src. That
+  data was compiled for a different app (firefinder_simulator.html) but
+  describes the same photo files, so it doubles as "the actual bearing shown
+  in the photograph" for this overlay. A photo's bearing is taken as the
+  midpoint of its left/right azimuth range, averaged circularly so ranges
+  that cross 0°/360° (e.g. left=359°, right=21°) don't average incorrectly.
+    */
+    function findAzimuthRange(src) {
+      const lookout = LOOKOUTS[ACTIVE_PANORAMA];
+      if (!lookout) return null;
+      const entry = lookout.photos.find(p => p.src === src);
+      if (!entry) return null;
+      const { left_azimuth, right_azimuth } = entry;
+      if (typeof left_azimuth !== 'number' || typeof right_azimuth !== 'number') return null;
+      return { left_azimuth, right_azimuth };
+    }
+
+    function centerBearing(left, right) {
+      // Walk from left to right going clockwise (the direction a photo's FOV
+      // always spans), adding 360 to `right` if the range crosses due north
+      // so the midpoint lands inside the range instead of on its far side.
+      const span = ((right - left) % 360 + 360) % 360;
+      return (left + span / 2) % 360;
+    }
+
+    function updateCompassRose(src) {
+      const range = findAzimuthRange(src);
+      if (!range) {
+        compassRose.classList.remove('visible');
+        return;
+      }
+      const bearing = centerBearing(range.left_azimuth, range.right_azimuth);
+      compassRose.style.transform = `translateX(-50%) rotate(${-bearing}deg)`;
+      compassRose.title = `Facing ~${Math.round(bearing)}°`;
+      compassRose.classList.add('visible');
+    }
 
     let svgW = 0, svgH = 0;
     let lines = [], labels = [], tips = [], icons = [];
@@ -293,6 +368,7 @@
       shownLabels = new Set();
       updateArrowVisibility();
       updateArrowTooltips();
+      updateCompassRose(photo.src);
 
       // Keep the URL pointing at the current photo so a reload or bookmark
       // returns here. replaceState (not location.hash =) avoids piling up a
