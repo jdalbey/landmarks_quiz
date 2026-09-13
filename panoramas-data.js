@@ -167,7 +167,7 @@ const PANORAMAS = {
       {
          src: "images/Landmarks_Delilah14.png", width: 1920, height: 1004,
          landmarks: [
-            { id:1, x1:165, y1:360, x2:165, y2:552, label: "Bear Mtn (TUU)", target: "circle", closeup: null },
+            { id:1, x1:165, y1:360, x2:165, y2:552, label: "Bear Mtn (TUU)\n15 mi", target: "circle", closeup: null },
             { id:2, x1:1110, y1:300, x2:1110, y2:510, label: "Pine Ridge (SQF)", target: "circle", closeup: null },
             { id:3, x1:1688, y1:260, x2:1688, y2:366, label: "Delilah Mtn (SQF)", target: "circle", closeup: null },
             { id:4, x1:852, y1:360, x2:852, y2:562, label: "Dunlap Area (FKU)", target: "arrow", closeup: null },
