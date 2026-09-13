@@ -39,6 +39,16 @@
     text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white;
   }
 
+  /* Named-place labels, styled to match OpenTopoMap's own place labels. */
+  .place-label {
+    color: black;
+    font-family: "DejaVu Sans", sans-serif;
+    font-size: 11px;
+    font-style: italic;
+    white-space: nowrap;
+    text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white;
+  }
+
   #no-bearing-msg {
     position: absolute;
     top: 12px;
@@ -62,6 +72,7 @@
 
 <script src="leaflet.js"></script>
 <script src="esri-leaflet.js"></script>
+<script src="places-data.js"></script>
 <script>
 // Compute the destination point (end point of line)
 // lat, lon is origin point of line 
@@ -95,7 +106,7 @@ function destinationPoint(lat, lon, bearingDeg, distanceMeters) {
   const centerLat = 36.80454;
   const centerLng = -119.11755;
   const center = [centerLat, centerLng];
-  const distanceMiles = 20
+  const distanceMiles = 25
   const distanceMeters = distanceMiles * 1609.344;
   const params     = new URLSearchParams(window.location.search);
   const rawBearing = params.get('bearing');
@@ -278,6 +289,48 @@ var overlayMaps = {
 };
 
 L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+// Named place labels (from places-data.js), shown/hidden by zoom level.
+// Each place carries its own minZoom/maxZoom, so a marker is added or
+// removed from the map whenever the zoom crosses that place's range,
+// rather than being tied to a fixed set of zoom tiers.
+const placeMarkers = PLACES.map(function (place) {
+  return {
+    place: place,
+    marker: L.marker([place.lat, place.lng], {
+      icon: L.divIcon({
+        className: 'place-label',
+        html: place.name,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+      }),
+      interactive: false
+    })
+  };
+});
+
+function updatePlaceVisibility() {
+  const zoom = map.getZoom();
+  for (const { place, marker } of placeMarkers) {
+    let minZoom = 0;
+    if (place.minZoom !== undefined) {
+      minZoom = place.minZoom;
+    }
+    let maxZoom = 99;
+    if (place.maxZoom !== undefined) {
+      maxZoom = place.maxZoom;
+    }
+    const shouldShow = zoom >= minZoom && zoom <= maxZoom;
+    const isShown = map.hasLayer(marker);
+    if (shouldShow && !isShown) {
+      marker.addTo(map);
+    } else if (!shouldShow && isShown) {
+      map.removeLayer(marker);
+    }
+  }
+}
+map.on('zoomend', updatePlaceVisibility);
+updatePlaceVisibility(); // set initial visibility for the starting zoom level
 </script>
 
 </body>
