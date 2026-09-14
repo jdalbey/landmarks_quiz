@@ -9,6 +9,10 @@
 //                                      360° set, in left-to-right order
 //     src           — path to the photo, relative to Learn-your-territory.html
 //     width, height — native pixel dimensions of that photo
+//     left_azimuth  — compass bearing in degrees at the LEFT edge of the photo
+//     right_azimuth — compass bearing in degrees at the RIGHT edge of the photo
+//                     (used to rotate the compass rose overlay — see
+//                     updateCompassRose() in Learn-your-territory.html)
 //     landmarks[]   — landmarks visible in this photo. Same fields as before:
 //       x1, y1  — top end of the line (undecorated, label appears above here)
 //       x2, y2  — bottom end of the line (dot or arrow, points to the land feature)
@@ -25,7 +29,7 @@ const PANORAMAS = {
     // Each photo has its own set of landmarks. Don't forget to add photo width/height.
     photos: [
       {
-         src: "images/Landmarks_Delilah7.png", width: 1920, height: 1014,
+         src: "images/Landmarks_Delilah7.png", width: 1920, height: 1014, left_azimuth: 359.03, right_azimuth: 21,
          landmarks: [
             { id:1, x1:315, y1:100, x2:315, y2:740, label: "N. Fork Kings River (SNF)", target: "arrow", closeup: null },
             { id:2, x1:417, y1:60, x2:417, y2:327, label: "Indian Rock (SNF)", target: "circle", closeup: null },
@@ -39,7 +43,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah8.png", width: 1920, height: 1344,
+         src: "images/Landmarks_Delilah8.png", width: 1920, height: 1344, left_azimuth: 21, right_azimuth: 42.4,
          landmarks: [
             { id:2, x1:212, y1:60, x2:212, y2:177, label: "Black Rock (SNF)", target: "circle", closeup: null },
             { id:1, x1:157, y1:100, x2:194, y2:1318, label: "Kings River (SNF)", target: "circle", closeup: null },
@@ -60,7 +64,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah9.png", width: 1920, height: 1009,
+         src: "images/Landmarks_Delilah9.png", width: 1920, height: 1009, left_azimuth: 41.21, right_azimuth: 66.71,
          landmarks: [
             { id:1, x1:354, y1:60, x2:384, y2:229, label: "Mt. Goddard (KNP)", target: "circle", closeup: null },
             { id:2, x1:498, y1:60, x2:488, y2:213, label: "Castle Pk (SNF)", target: "circle", closeup: null },
@@ -81,7 +85,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah10.png", width: 1920, height: 1042,
+         src: "images/Landmarks_Delilah10.png", width: 1920, height: 1042, left_azimuth: 66.71, right_azimuth: 91,
          landmarks: [
             { id:1, x1:215, y1:60, x2:229, y2:196, label: "Middle Fork Kings Rvr (SNF)", target: "arrow", closeup: null },
             { id:2, x1:270, y1:280, x2:270, y2:505, label: "Verplank Crk (SQF)", target: "arrow", closeup: null },
@@ -104,7 +108,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah11.png", width: 1920, height: 1265,
+         src: "images/Landmarks_Delilah11.png", width: 1920, height: 1265, left_azimuth: 91, right_azimuth: 116.63,
          landmarks: [
             { id:4, x1:708, y1:60, x2:708, y2:153, label: "Cherry Gap (SQF)", target: "arrow", closeup: null },
             { id:1, x1:1621, y1:100, x2:1621, y2:1192, label: "Sampson Flat (SQF)", target: "ellipse", closeup: null },
@@ -119,7 +123,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah12.png", width: 1920, height: 984,
+         src: "images/Landmarks_Delilah12.png", width: 1920, height: 984, left_azimuth: 116.63, right_azimuth: 142,
          landmarks: [
             { id:1, x1:75, y1:100, x2:55, y2:253, label: "Grant Grove (KNP)", target: "ellipse", closeup: null },
             { id:2, x1:220, y1:60, x2:220, y2:192, label: "Park Ridge LO (KNP)", target: "circle", closeup: null },
@@ -141,7 +145,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah13.png", width: 1920, height: 888,
+         src: "images/Landmarks_Delilah13.png", width: 1920, height: 888, left_azimuth: 140.28, right_azimuth: 162.43,
          landmarks: [
             { id:1, x1:275, y1:100, x2:176, y2:246, label: "Ash Peaks Ridge (SQF)", target: "circle", closeup: null },
             { id:1, x1:275, y1:100, x2:370, y2:261, label: "Ash Peaks Ridge (SQF)", target: "circle", closeup: null },
@@ -165,7 +169,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah14.png", width: 1920, height: 1004,
+         src: "images/Landmarks_Delilah14.png", width: 1920, height: 1004, left_azimuth: 162.41, right_azimuth: 184.73,
          landmarks: [
             { id:1, x1:165, y1:360, x2:165, y2:552, label: "Bear Mtn (TUU)\n15 mi", target: "circle", closeup: null },
             { id:2, x1:1110, y1:300, x2:1110, y2:510, label: "Pine Ridge (SQF)", target: "circle", closeup: null },
@@ -175,20 +179,20 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah15.png", width: 1920, height: 1006,
+         src: "images/Landmarks_Delilah15.png", width: 1920, height: 1006, left_azimuth: 185, right_azimuth: 214,
          landmarks: [
             { id:1, x1:726, y1:120, x2:726, y2:708, label: "Delilah Rd (SQF)", target: "circle", closeup: null },
  ]
       },
       {
-         src: "images/Landmarks_Delilah16.png", width: 1920, height: 1007,
+         src: "images/Landmarks_Delilah16.png", width: 1920, height: 1007, left_azimuth: 206, right_azimuth: 229.5,
          landmarks: [
           { id:1, x1:900, y1:250, x2:900, y2:450, label: "Dude Ridge (SQF)", target: "circle", closeup: null},
           { id:2, x1:1838, y1:300, x2:1838, y2:585, label: "Reedley", target: "ellipse", closeup: null },
  ]
       },
       {
-         src: "images/Landmarks_Delilah1.png", width: 1920, height: 968,
+         src: "images/Landmarks_Delilah1.png", width: 1920, height: 968, left_azimuth: 223.11, right_azimuth: 247.14,
          landmarks: [
           { id:1, x1:1000, y1:160, x2:1000,  y2:428, label: "Squaw Valley (FKU)", target: "ellipse", closeup: null   },
           { id:2, x1:1432,  y1:100, x2:1432,  y2:314, label: "Bald Mtn (FKU)",             target: "circle", closeup: null  },
@@ -204,7 +208,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah2.png", width: 1920, height: 892,
+         src: "images/Landmarks_Delilah2.png", width: 1920, height: 892, left_azimuth: 247.0, right_azimuth: 271.16,
          landmarks: [          
             { id:1, x1:504, y1:100, x2:504, y2:255, label: "Dalton Mtn (FKU)",               target: "circle", closeup: null   },
             { id:2, x1:1470, y1:60, x2:1470, y2:427, label: "Wonder Valley (FKU)\n10mi", target: "ellipse", closeup: "images/closeups/wonder_valley.png" },
@@ -221,7 +225,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah3.png", width: 1920, height: 870,
+         src: "images/Landmarks_Delilah3.png", width: 1920, height: 870, left_azimuth: 271.38, right_azimuth: 295.36,
          landmarks: [
             { id:1, x1:335, y1:120, x2:335, y2:507, label: "Luckett Mtn (FKU)", target: "circle", closeup: null},
             { id:2, x1:405, y1:60, x2:405, y2:405, label: "Flat above and \nWest of Zebe Creek\n(FKU)", target: "circle", closeup: null},
@@ -247,7 +251,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah4.png", width: 1920, height: 921,
+         src: "images/Landmarks_Delilah4.png", width: 1920, height: 921, left_azimuth: 293.82, right_azimuth: 321.12,
          landmarks: [
             { id:1, x1:169, y1:60, x2:169, y2:244, label: "Hog Mtn (SNF)", target: "circle", closeup: null },
             { id:2, x1:1125, y1:160, x2:1084, y2:278, label: "Oat Mtn (SQF)\n5mi", target: "circle", closeup: null },
@@ -267,7 +271,7 @@ const PANORAMAS = {
 ]
       },
       {
-         src: "images/Landmarks_Delilah5.png", width: 1920, height: 1008,
+         src: "images/Landmarks_Delilah5.png", width: 1920, height: 1008, left_azimuth: 317.41, right_azimuth: 338.55,
          landmarks: [
             { id:1, x1:900, y1:120, x2:432, y2:402, label: "Secata Ridge (SNF)", target: "circle", closeup: null },
             { id:1, x1:900, y1:120, x2:944, y2:372, label: "Secata Ridge (SNF)", target: "circle", closeup: null },
@@ -283,7 +287,7 @@ const PANORAMAS = {
  ]
       },
       {
-         src: "images/Landmarks_Delilah6.png", width: 1920, height: 1146,
+         src: "images/Landmarks_Delilah6.png", width: 1920, height: 1146, left_azimuth: 338.55, right_azimuth: 359.03,
          landmarks: [
             { id:1, x1:461, y1:60, x2:461, y2:319, label: "Fence Meadow Lookout (SNF)", target: "circle", closeup: null },
             { id:2, x1:1688, y1:140, x2:1688, y2:918, label: "Balch Camp (SNF)", target: "circle", closeup: null },

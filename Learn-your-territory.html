@@ -193,7 +193,6 @@
   </div>
 
   <script src="panoramas-data.js"></script>
-  <script src="lookouts-data.js"></script>
   <script>
     // -------------------------------------------------------------------------
     // Panorama/photo state — landmark and photo data comes from PANORAMAS,
@@ -281,24 +280,12 @@
   screen angle (0 - B) measured clockwise from "up" — so the image is
   rotated by -B degrees via CSS transform.
 
-  Bearing data (left_azimuth/right_azimuth per photo) lives in
-  lookouts-data.js's LOOKOUTS, matched to the current photo by its src. That
-  data was compiled for a different app (firefinder_simulator.html) but
-  describes the same photo files, so it doubles as "the actual bearing shown
-  in the photograph" for this overlay. A photo's bearing is taken as the
-  midpoint of its left/right azimuth range, averaged circularly so ranges
-  that cross 0°/360° (e.g. left=359°, right=21°) don't average incorrectly.
+  Bearing data (left_azimuth/right_azimuth) lives right on each photo entry
+  in panoramas-data.js — "the actual bearing shown in the photograph" for
+  this overlay. A photo's bearing is taken as the midpoint of its left/right
+  azimuth range, averaged circularly so ranges that cross 0°/360° (e.g.
+  left=359°, right=21°) don't average incorrectly.
     */
-    function findAzimuthRange(src) {
-      const lookout = LOOKOUTS[ACTIVE_PANORAMA];
-      if (!lookout) return null;
-      const entry = lookout.photos.find(p => p.src === src);
-      if (!entry) return null;
-      const { left_azimuth, right_azimuth } = entry;
-      if (typeof left_azimuth !== 'number' || typeof right_azimuth !== 'number') return null;
-      return { left_azimuth, right_azimuth };
-    }
-
     function centerBearing(left, right) {
       // Walk from left to right going clockwise (the direction a photo's FOV
       // always spans), adding 360 to `right` if the range crosses due north
@@ -307,13 +294,13 @@
       return (left + span / 2) % 360;
     }
 
-    function updateCompassRose(src) {
-      const range = findAzimuthRange(src);
-      if (!range) {
+    function updateCompassRose(photo) {
+      const { left_azimuth, right_azimuth } = photo;
+      if (typeof left_azimuth !== 'number' || typeof right_azimuth !== 'number') {
         compassRose.classList.remove('visible');
         return;
       }
-      const bearing = centerBearing(range.left_azimuth, range.right_azimuth);
+      const bearing = centerBearing(left_azimuth, right_azimuth);
       compassRose.style.transform = `translateX(-50%) rotate(${-bearing}deg)`;
       compassRose.title = `Facing ~${Math.round(bearing)}°`;
       compassRose.classList.add('visible');
@@ -373,7 +360,7 @@
       shownLabels = new Set();
       updateArrowVisibility();
       updateArrowTooltips();
-      updateCompassRose(photo.src);
+      updateCompassRose(photo);
 
       // Keep the URL pointing at the current photo so a reload or bookmark
       // returns here. replaceState (not location.hash =) avoids piling up a
