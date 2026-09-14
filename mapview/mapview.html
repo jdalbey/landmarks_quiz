@@ -102,6 +102,15 @@ function destinationPoint(lat, lon, bearingDeg, distanceMeters) {
     ];
 }
 
+// Formats an inch value as a label like ".5", "1", "1.5", "2" — a bare
+// leading dot instead of "0.5", matching how a physical ruler is marked.
+function formatInchLabel(inches) {
+    if (Number.isInteger(inches)) { return inches.toString(); }
+    const text = inches.toFixed(1);
+    if (text.startsWith('0.')) { return text.slice(1); }
+    return text;
+}
+
   // Constants describing the desired line
   const centerLat = 36.80454;
   const centerLng = -119.11755;
@@ -119,7 +128,7 @@ function destinationPoint(lat, lon, bearingDeg, distanceMeters) {
 
   let endPoint = null;
   if (hasBearing) {
-    // Project 20 miles out from the lookout along the reported bearing to
+    // Project 25 miles out from the lookout along the reported bearing to
     // get the far end of the sight line.
     endPoint = destinationPoint(
           center[0],
@@ -127,7 +136,7 @@ function destinationPoint(lat, lon, bearingDeg, distanceMeters) {
           bearing,
           distanceMeters
     );
-    console.log(endPoint); // debug: log the computed endpoint coordinates
+    //console.log(endPoint); // debug: log the computed endpoint coordinates
   } else {
     // No bearing was supplied, so there's nothing to draw — surface the
     // explanatory message instead.
@@ -212,12 +221,14 @@ if (hasBearing) {
           }
       ).addTo(map);
 
-      // Label the long (whole-mile) ticks with the mile number, placed a
-      // bit past the tick's far end (away from the sight line). The ticks
-      // themselves are only a few pixels long on screen at most zoom
-      // levels, so the label is offset an extra tickLengthMeters beyond
-      // tickEnd to keep it clearly separated from the line, with an
-      // explicit centered iconAnchor so it doesn't drift toward the line.
+      // Label the long ticks (every whole mile) with the corresponding
+      // inch value on the real Firefinder rule's own scale of .5" = 1 mi
+      // — so labels read .5, 1, 1.5, 2, ... instead of the mile count —
+      // placed a bit past the tick's far end (away from the sight line).
+      // The ticks themselves are only a few pixels long on screen at most
+      // zoom levels, so the label is offset an extra tickLengthMeters
+      // beyond tickEnd to keep it clearly separated from the line, with
+      // an explicit centered iconAnchor so it doesn't drift toward the line.
       if (drawlength === tickLengthMeters * 2) {
           const labelPoint = destinationPoint(
               pointOnLine[0],
@@ -228,7 +239,7 @@ if (hasBearing) {
           L.marker(labelPoint, {
               icon: L.divIcon({
                   className: 'mile-label',
-                  html: mile.toString(),
+                  html: formatInchLabel(mile / 2),
                   iconSize: [16, 16],
                   iconAnchor: [8, 8]
               }),

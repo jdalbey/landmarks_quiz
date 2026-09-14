@@ -146,7 +146,7 @@ const SCENARIOS = {
       photoId: "delilah_3",
       overlayImage: "assets/smoke_leaning.png",
       xPos: 1343, yPos: 400, widthPx: 77,   // pixel coords on the 1920x968 native photo
-      closeupImage: "images/closeups/DeerCreek.jpg"
+      closeupImage: "images/closeups/scenario3_closeup.png"
     },
     answers: { 
       classification: "illegitimate",
@@ -198,9 +198,9 @@ const SCENARIOS = {
     photoIds: ["delilah_12"],
     smoke: {
       photoId: "delilah_12",
-      overlayImage: "assets/forestfire smoke_chatgpt.png",
+      overlayImage: "assets/smoke_forestfire.png",
       xPos: 1490, yPos: 382, widthPx: 77,   // pixel coords on the 1920x968 native photo
-      closeupImage: "images/closeups/LoggerPt.jpg"
+      closeupImage: "images/closeups/scenario5_closeup.png"
     },
     answers: { 
       classification: "illegitimate",
@@ -227,9 +227,9 @@ const SCENARIOS = {
       photoId: "delilah_11",
       overlayImage: "assets/smoke_rockyfire.png",
       xPos: 1750, yPos: 174, widthPx: 77,   // pixel coords on the 1920x968 native photo
-      closeupImage: "images/closeups/ManzanitaHill.jpg"
+      closeupImage: "images/closeups/scenario6_closeup.png"
     },
-    answers: { // TODO: placeholder — see file header
+    answers: { 
       classification: "illegitimate",
       azimuth_tolerance_min: 10,
       distance: null,
@@ -254,7 +254,7 @@ const SCENARIOS = {
       photoId: "delilah_9",
       overlayImage: "assets/smoke_ridge.png",
       xPos: 1300, yPos: 350, widthPx: 142,   // pixel coords on the 1920x968 native photo
-      closeupImage: null
+      closeupImage: "images/closeups/scenario7_closeup.png"
     },
     answers: { 
       classification: "illegitimate",
@@ -279,7 +279,7 @@ const SCENARIOS = {
     photoIds: ["delilah_13"],
     smoke: {
       photoId: "delilah_13",
-      overlayImage: "assets/dustoverlay.png",
+      overlayImage: "assets/dustcolumn_overlay.png",
       xPos: 1348, yPos: 404, widthPx: 77,   // pixel coords on the 1920x968 native photo
       closeupImage: null
     },
