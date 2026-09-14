@@ -279,9 +279,9 @@ const SCENARIOS = {
     photoIds: ["delilah_13"],
     smoke: {
       photoId: "delilah_13",
-      overlayImage: "assets/dustcolumn_overlay.png",
-      xPos: 1348, yPos: 404, widthPx: 77,   // pixel coords on the 1920x968 native photo
-      closeupImage: null
+      overlayImage: "assets/dustcloud.png",
+      xPos: 1320, yPos: 404, widthPx: 77,   // pixel coords on the 1920x968 native photo
+      closeupImage: "images/closeups/scenario8_closeup.png"
     },
     answers: { 
       classification: "false",
