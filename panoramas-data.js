@@ -40,6 +40,7 @@ const PANORAMAS = {
             { id:7, x1:1631, y1:60, x2:1631, y2:206, label: "Sheeps Head (SNF)", target: "circle", closeup: null },
             { id:8, x1:1501, y1:100, x2:1501, y2:511, label: "Patterson Crk Falls (SNF)", target: "circle", closeup: null },
             { id:9, x1:1827, y1:60, x2:1827, y2:327, label: "Weir Crk (SNF)", target: "circle", closeup: null },
+          //  { id:10, x1:1800, y1:390, x2:1910, y2:485, label: "Patterson Reflectors (SNF)", target: "circle", closeup: "images/closeups/PattersonReflectors.jpg" },
  ]
       },
       {
@@ -81,7 +82,7 @@ const PANORAMAS = {
             { id:12, x1:1593, y1:140, x2:1500, y2:666, label: "Hoist Ridge (SQF)", target: "circle", closeup: null },
             { id:12, x1:1593, y1:140, x2:1724, y2:600, label: "Hoist Ridge (SQF)", target: "circle", closeup: null },
             { id:13, x1:1794, y1:60, x2:1794, y2:308, label: "Deer Ridge (SNF)", target: "circle", closeup: null },
-            { id:14, x1:1374, y1:330, x2:1322, y2:440, label: "Garlic Spur cliffs\n(SNF) 10mi", target: "circle", closeup: null },
+            { id:14, x1:1374, y1:330, x2:1322, y2:440, label: "Garlic Spur cliffs\n(SNF) 10mi", target: "circle", closeup: "images/closeups/GarlicSpurCliffs.jpg" },
  ]
       },
       {
@@ -117,7 +118,7 @@ const PANORAMAS = {
             { id:5, x1:1068, y1:100, x2:1068, y2:736, label: "McKenzie Ridge (SQF)", target: "circle", closeup: null },
             { id:6, x1:1413, y1:100, x2:1413, y2:324, label: "Abbot Crk (SQF)", target: "arrow", closeup: null },
             { id:7, x1:1552, y1:60, x2:1552, y2:135, label: "Park Ridge (KNP)", target: "circle", closeup: null },
-            { id:8, x1:1765, y1:60, x2:1765, y2:167, label: "Manzanita hill\nRoad 5283 (KNP)", target: "circle", closeup: "images/closeups/manzanita_patch.png" },
+            { id:8, x1:1765, y1:60, x2:1765, y2:167, label: "Manzanita hill\nRoad 5283 (KNP)", target: "circle", closeup: "images/closeups/ManzanitaHill.jpg" },
             { id:9, x1:810, y1:150, x2:858, y2:568, label: "Goodmill (SQF)", target: "arrow", closeup: null },
             { id:10, x1:518, y1:100, x2:518, y2:1208, label: "Goat Saddle (SQF)", target: "circle", closeup: null },
  ]
